@@ -239,10 +239,10 @@
                 <button class="menu-btn" id="menuToggle" aria-label="Меню">
                     <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg" alt="Меню">
                 </button>
-                <a href="index.html" class="wiki-logo-text">Викивнезакона</a>
+                <a href="/" class="wiki-logo-text">Викивнезакона</a>
             </div>
             <div class="right-side">
-                <a href="search.html">
+                <a href="/search">
                     <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg" alt="Поиск">
                 </a>
             </div>
@@ -253,7 +253,7 @@
     <nav class="burger-menu" id="burgerMenu">
         <button class="burger-close" id="burgerClose">✕</button>
         <div class="menu-header"><span class="logo-text">Викивнезакона</span></div>
-        <a href="index.html" class="menu-item"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная</a>
+        <a href="/" class="menu-item"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная</a>
         <button class="menu-item" id="randomArticleBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg" alt="Случайная"> Случайная</button>
         <div class="menu-divider"></div>
         <button class="menu-item" id="addArticleMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Создать"> Создать статью</button>
@@ -322,15 +322,13 @@
             if (currentUser) {
                 authStatusText.innerHTML = `<span class="user-email">${escapeHtml(currentUsername)}</span> (${currentUserRole === 'admin' ? 'админ' : 'пользователь'})<br><button class="logout-btn" id="logoutBtn">Выйти</button>`;
                 loginMenuText.textContent = escapeHtml(currentUsername);
-                document.getElementById('logoutBtn')?.addEventListener('click', (e) => { e.stopPropagation(); auth.signOut(); closeMenu(); window.location.href = 'index.html'; });
+                document.getElementById('logoutBtn')?.addEventListener('click', (e) => { e.stopPropagation(); auth.signOut(); closeMenu(); window.location.href = '/'; });
             } else { authStatusText.textContent = 'Вы не авторизованы'; loginMenuText.textContent = 'Войти'; }
         }
-        loginMenuBtn.addEventListener('click', () => { closeMenu(); if (currentUser) window.location.href = 'profile.html?uid=' + currentUser.uid; else window.location.href = 'login.html'; });
+        loginMenuBtn.addEventListener('click', () => { closeMenu(); if (currentUser) window.location.href = '/profile?uid=' + currentUser.uid; else window.location.href = '/login'; });
         function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
         // ===== IMGBB ЗАГРУЗКА =====
-        // Зарегистрируйтесь на https://imgbb.com и получите API ключ
-        // Вставьте свой ключ вместо 'ваш_ключ_от_imgbb'
         const IMGBB_API_KEY = 'ваш_ключ_от_imgbb';
 
         async function uploadToImgbb(file) {
@@ -354,8 +352,8 @@
             return data.data.url;
         }
 
-        randomArticleBtn.addEventListener('click', () => { closeMenu(); db.collection('articles').get().then(snapshot => { const ids = []; snapshot.forEach(doc => ids.push(doc.id)); if (ids.length === 0) { alert('Статей пока нет'); return; } window.location.href = 'article.html?id=' + ids[Math.floor(Math.random() * ids.length)]; }); });
-        addArticleMenuBtn.addEventListener('click', () => { closeMenu(); if (!currentUser) { alert('Пожалуйста, войдите в систему'); window.location.href = 'login.html'; return; } window.location.href = 'add.html'; });
+        randomArticleBtn.addEventListener('click', () => { closeMenu(); db.collection('articles').get().then(snapshot => { const ids = []; snapshot.forEach(doc => ids.push(doc.id)); if (ids.length === 0) { alert('Статей пока нет'); return; } window.location.href = '/article?id=' + ids[Math.floor(Math.random() * ids.length)]; }); });
+        addArticleMenuBtn.addEventListener('click', () => { closeMenu(); if (!currentUser) { alert('Пожалуйста, войдите в систему'); window.location.href = '/login'; return; } window.location.href = '/add'; });
         telegramLink.addEventListener('click', (e) => { e.preventDefault(); window.open('https://t.me/your_channel', '_blank'); closeMenu(); });
 
         function initPage() {
@@ -364,12 +362,12 @@
             else { isEditMode = false; editArticleId = null; renderForm(null); }
         }
         function loadArticleForEdit(articleId) {
-            if (!currentUser) { container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p>Пожалуйста, <a href="login.html">войдите</a> для редактирования.</p></div>`; return; }
+            if (!currentUser) { container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p>Пожалуйста, <a href="/login">войдите</a> для редактирования.</p></div>`; return; }
             container.innerHTML = '<div class="loading-text">Загрузка статьи...</div>';
             db.collection('articles').doc(articleId).get().then(doc => {
                 if (!doc.exists) { container.innerHTML = '<div class="auth-warning"><h2>Статья не найдена</h2></div>'; return; }
                 const data = doc.data();
-                if (data.authorId !== currentUser.uid && currentUserRole !== 'admin') { container.innerHTML = `<div class="auth-warning"><h2>Нет прав на редактирование</h2><a href="article.html?id=${articleId}" style="color:#36c;">Вернуться к статье</a></div>`; return; }
+                if (data.authorId !== currentUser.uid && currentUserRole !== 'admin') { container.innerHTML = `<div class="auth-warning"><h2>Нет прав на редактирование</h2><a href="/article?id=${articleId}" style="color:#36c;">Вернуться к статье</a></div>`; return; }
                 renderForm(data);
             }).catch(err => { container.innerHTML = '<div class="auth-warning"><h2>Ошибка загрузки</h2></div>'; });
         }
@@ -649,8 +647,26 @@
             setTimeout(updatePreview, 200);
 
             document.getElementById('articleForm').addEventListener('submit', (e) => { e.preventDefault(); saveArticle(); });
-            document.getElementById('cancelBtn').addEventListener('click', () => { if (isEditMode && editArticleId) window.location.href = 'article.html?id=' + editArticleId; else window.location.href = 'index.html'; });
+            document.getElementById('cancelBtn').addEventListener('click', () => { if (isEditMode && editArticleId) window.location.href = '/article?id=' + editArticleId; else window.location.href = '/'; });
             if (isEditMode) document.getElementById('deleteBtn')?.addEventListener('click', () => { if (confirm('Удалить статью?')) deleteArticle(); });
+        }
+
+        // ===== СОХРАНЕНИЕ В ИСТОРИЮ =====
+        function saveToHistory(articleId, data, action, userId, username) {
+            db.collection('articleHistory').add({
+                articleId: articleId,
+                userId: userId || 'unknown',
+                username: username || 'Неизвестный',
+                action: action || 'edit',
+                timestamp: Date.now(),
+                data: {
+                    title: data.title,
+                    content: data.content,
+                    afterContent: data.afterContent || '',
+                    infobox: data.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
+                    branches: data.branches || []
+                }
+            }).catch(err => console.error('Ошибка сохранения истории:', err));
         }
 
         function saveArticle() {
@@ -684,16 +700,20 @@
             if (isEditMode && editArticleId) {
                 articleData.authorId = currentUser.uid;
                 db.collection('articles').doc(editArticleId).update(articleData).then(() => {
+                    // Сохраняем в историю
+                    saveToHistory(editArticleId, articleData, 'edit', currentUser.uid, currentUsername);
                     db.collection('logs').add({ action: 'edit', articleId: editArticleId, title, userId: currentUser.uid, timestamp: Date.now() });
                     showStatus('Статья обновлена!', 'success');
-                    setTimeout(() => window.location.href = 'article.html?id=' + editArticleId, 1200);
+                    setTimeout(() => window.location.href = '/article?id=' + editArticleId, 1200);
                 }).catch(err => showStatus('Ошибка: ' + err.message, 'error'));
             } else {
                 articleData.authorId = currentUser.uid; articleData.createdAt = Date.now(); const newRef = db.collection('articles').doc(); articleData.articleId = newRef.id;
                 newRef.set(articleData).then(() => {
+                    // Сохраняем в историю
+                    saveToHistory(newRef.id, articleData, 'create', currentUser.uid, currentUsername);
                     db.collection('logs').add({ action: 'create', articleId: newRef.id, title, userId: currentUser.uid, timestamp: Date.now() });
                     showStatus('Статья создана!', 'success');
-                    setTimeout(() => window.location.href = 'article.html?id=' + newRef.id, 1200);
+                    setTimeout(() => window.location.href = '/article?id=' + newRef.id, 1200);
                 }).catch(err => showStatus('Ошибка: ' + err.message, 'error'));
             }
         }
@@ -709,13 +729,13 @@
                     deletedAt: Date.now(), deletedBy: currentUser.uid, originalAuthor: data.authorId || 'unknown'
                 }).then(() => db.collection('articles').doc(editArticleId).delete()).then(() => {
                     db.collection('logs').add({ action: 'delete', articleId: editArticleId, title: data.title, userId: currentUser.uid, timestamp: Date.now() });
-                    alert('Статья удалена'); window.location.href = 'index.html';
+                    alert('Статья удалена'); window.location.href = '/';
                 });
             }).catch(err => alert('Ошибка: ' + err.message));
         }
 
         if (!auth.currentUser) {
-            container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p><a href="login.html">Войдите</a> для создания статьи</p></div>`;
+            container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p><a href="/login">Войдите</a> для создания статьи</p></div>`;
         }
     </script>
 </body>

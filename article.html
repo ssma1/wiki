@@ -55,7 +55,7 @@
         .share-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; }
         .share-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         .share-btn:hover { background: #eaecf0; }
-        .edit-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; }
+        .edit-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; text-decoration: none; }
         .edit-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         .edit-btn:hover { background: #eaecf0; }
         .history-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; font-family: inherit; font-size: 13px; gap: 4px; }
@@ -485,6 +485,7 @@
                 }
             }
             const imageHtml = data.image ? `<img src="${escapeHtml(data.image)}" class="infobox-main-img" alt="Изображение">` : '';
+            // Используем rgba с непрозрачностью для нежного эффекта
             const bgColor = data.bgColor || 'rgba(0, 30, 100, 0.12)';
             const parsedTitle = parseTags(data.title || 'Инфобокс');
             return `
@@ -514,13 +515,33 @@
                 });
         }
 
+        // Функция для сохранения версии в историю
+        function saveToHistory(articleId, data, action, userId, username) {
+            db.collection('articleHistory').add({
+                articleId: articleId,
+                userId: userId || 'unknown',
+                username: username || 'Неизвестный',
+                action: action || 'edit',
+                timestamp: Date.now(),
+                data: {
+                    title: data.title,
+                    content: data.content,
+                    afterContent: data.afterContent || '',
+                    infobox: data.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
+                    branches: data.branches || []
+                }
+            }).catch(err => console.error('Ошибка сохранения истории:', err));
+        }
+
         function renderArticle(data) {
             const isAdmin = currentUserRole === 'admin';
             const isAuthor = currentUser && data.authorId === currentUser.uid;
-            // Теперь редактировать могут все авторизованные пользователи
+            // Редактировать могут все авторизованные пользователи
             const canEdit = !!currentUser;
             // Историю видят только автор и админ
             const canSeeHistory = isAuthor || isAdmin;
+            // Удалять могут только админ и автор
+            const canDelete = isAdmin || isAuthor;
 
             let mainText = parseTags(data.content || '');
             mainText = mainText.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
@@ -557,10 +578,10 @@
 
             const date = data.createdAt ? new Date(data.createdAt).toDateString() : 'Дата неизвестна';
 
-            // Удаляем старый delete-btn из article-actions, теперь он в отдельном месте
-            let actionsHtml = '';
-            if (isAdmin) {
-                actionsHtml = `<button class="delete-btn" id="deleteArticleBtn">Удалить</button>`;
+            // Кнопка удаления — только для админа и автора
+            let deleteHtml = '';
+            if (canDelete) {
+                deleteHtml = `<button class="delete-btn" id="deleteArticleBtn">Удалить</button>`;
             }
 
             const shareUrl = window.location.href;
@@ -575,11 +596,20 @@
                 </div>
             `;
 
-            // Кнопка редактирования (карандаш) — для всех авторизованных
+            // Кнопка редактирования (карандаш) — для всех, но если не залогинен → ведёт на reg.html
             if (canEdit) {
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="add.html?id=${data.id}" class="edit-btn" title="Редактировать">
+                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
+                        </a>
+                    </div>
+                `;
+            } else {
+                // Для незарегистрированных — карандаш ведёт на reg.html
+                toolsRightHtml += `
+                    <div class="tool-item">
+                        <a href="reg.html" class="edit-btn" title="Войдите чтобы редактировать">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
                         </a>
                     </div>
@@ -601,7 +631,7 @@
             container.innerHTML = `
                 <div class="article-header">
                     <h1 class="page-title">${escapeHtml(data.title)}</h1>
-                    ${actionsHtml}
+                    ${deleteHtml}
                 </div>
 
                 <div class="article-tabs">
@@ -677,15 +707,6 @@
         async function loadHistory(articleId) {
             historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
             try {
-                // Загружаем текущую версию статьи
-                const currentDoc = await db.collection('articles').doc(articleId).get();
-                if (!currentDoc.exists) {
-                    historyList.innerHTML = '<div class="history-empty">Статья не найдена</div>';
-                    return;
-                }
-                const currentData = currentDoc.data();
-
-                // Загружаем историю из коллекции articleHistory
                 const historySnapshot = await db.collection('articleHistory')
                     .where('articleId', '==', articleId)
                     .orderBy('timestamp', 'desc')
@@ -697,17 +718,6 @@
                     historyItems.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Добавляем текущую версию как самую свежую
-                const currentVersion = {
-                    id: 'current',
-                    timestamp: currentData.updatedAt || currentData.createdAt || Date.now(),
-                    userId: currentData.authorId || 'unknown',
-                    username: 'Текущая версия',
-                    action: 'current',
-                    data: currentData
-                };
-                historyItems.unshift(currentVersion);
-
                 if (historyItems.length === 0) {
                     historyList.innerHTML = '<div class="history-empty">История изменений пуста</div>';
                     return;
@@ -716,9 +726,10 @@
                 let html = '';
                 historyItems.forEach((item, index) => {
                     const date = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Дата неизвестна';
-                    const isCurrent = item.action === 'current';
                     const user = item.username || 'Неизвестный пользователь';
-                    const actionText = isCurrent ? 'Текущая версия' : (item.action || 'Изменение');
+                    const actionText = item.action === 'create' ? 'Создание статьи' : 
+                                      item.action === 'restore' ? 'Восстановление' : 
+                                      item.action === 'edit' ? 'Редактирование' : 'Изменение';
                     
                     html += `
                         <div class="history-item">
@@ -727,14 +738,13 @@
                                 <div class="history-date">${escapeHtml(date)}</div>
                                 <div class="history-action">${escapeHtml(actionText)}</div>
                             </div>
-                            ${!isCurrent && index > 0 ? `<button class="history-restore" data-history-id="${item.id}">Восстановить</button>` : ''}
+                            ${index > 0 ? `<button class="history-restore" data-history-id="${item.id}">Восстановить</button>` : ''}
                         </div>
                     `;
                 });
 
                 historyList.innerHTML = html;
 
-                // Обработчики восстановления
                 document.querySelectorAll('.history-restore').forEach(btn => {
                     btn.addEventListener('click', async () => {
                         const historyId = btn.dataset.historyId;
@@ -760,7 +770,6 @@
                 const data = doc.data();
                 const restoredData = data.data;
                 
-                // Обновляем статью
                 await db.collection('articles').doc(articleId).update({
                     title: restoredData.title,
                     content: restoredData.content,
@@ -770,7 +779,6 @@
                     updatedAt: Date.now()
                 });
 
-                // Добавляем запись в историю о восстановлении
                 await db.collection('articleHistory').add({
                     articleId: articleId,
                     userId: currentUser?.uid || 'unknown',
@@ -791,9 +799,15 @@
             }
         }
 
+        // Сохраняем в историю при создании статьи (вызывается из add.html через saveArticle)
+        // Добавляем глобальную функцию для сохранения истории из add.html
+        window.saveArticleHistory = function(articleId, data, action) {
+            saveToHistory(articleId, data, action || 'create', currentUser?.uid, currentUsername);
+        };
+
         function deleteArticle(articleId, data) {
-            if (!currentUser || currentUserRole !== 'admin') {
-                alert('Только администраторы могут удалять статьи');
+            if (!currentUser || (currentUserRole !== 'admin' && data.authorId !== currentUser.uid)) {
+                alert('Только администраторы и автор могут удалять статьи');
                 return;
             }
             db.collection('articles').doc(articleId).get().then(doc => {
