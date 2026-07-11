@@ -357,10 +357,21 @@
         telegramLink.addEventListener('click', (e) => { e.preventDefault(); window.open('https://t.me/your_channel', '_blank'); closeMenu(); });
 
         function initPage() {
-            const params = new URLSearchParams(window.location.search); const articleId = params.get('id');
-            if (articleId) { isEditMode = true; editArticleId = articleId; loadArticleForEdit(articleId); }
-            else { isEditMode = false; editArticleId = null; renderForm(null); }
+            const params = new URLSearchParams(window.location.search); 
+            const articleId = params.get('id');
+            const titleParam = params.get('title');
+            
+            if (articleId) { 
+                isEditMode = true; 
+                editArticleId = articleId; 
+                loadArticleForEdit(articleId); 
+            } else { 
+                isEditMode = false; 
+                editArticleId = null; 
+                renderForm(null, titleParam); 
+            }
         }
+        
         function loadArticleForEdit(articleId) {
             if (!currentUser) { container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p>Пожалуйста, <a href="/login">войдите</a> для редактирования.</p></div>`; return; }
             container.innerHTML = '<div class="loading-text">Загрузка статьи...</div>';
@@ -374,8 +385,8 @@
 
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
-        function renderForm(existingData) {
-            const title = existingData?.title || '';
+        function renderForm(existingData, titleParam) {
+            const title = existingData?.title || titleParam || '';
             const content = existingData?.content || '';
             const afterContent = existingData?.afterContent || '';
             const infobox = existingData?.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' };
@@ -658,7 +669,7 @@
                 userId: userId || 'unknown',
                 username: username || 'Неизвестный',
                 action: action || 'edit',
-                timestamp: Date.now(),
+                timestamp: new Date(),
                 data: {
                     title: data.title,
                     content: data.content,
@@ -719,6 +730,7 @@
         }
 
         function showStatus(msg, type) { const status = document.getElementById('formStatus'); status.textContent = msg; status.className = 'form-status ' + type; status.style.display = 'block'; }
+        
         function deleteArticle() {
             if (!currentUser || currentUserRole !== 'admin') { alert('Только админы могут удалять'); return; }
             if (!editArticleId) return;
