@@ -1,19 +1,52 @@
 RewriteEngine On
 
+# ===== БЕЗОПАСНОСТЬ =====
+
+# Защита от XSS через заголовки
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.imgur.com https://*.imgbb.com https://i.ibb.co; connect-src 'self' https://*.firebaseio.com https://*.firebaseapp.com https://api.imgbb.com; font-src 'self'; frame-src 'self' https://*.firebaseapp.com;"
+</IfModule>
+
+# Защита от SQL инъекций и XSS через фильтрацию запросов
+<IfModule mod_rewrite.c>
+    # Блокировка опасных символов в URL
+    RewriteCond %{QUERY_STRING} (<|>|'|\"|%3C|%3E|%27|%22) [NC,OR]
+    RewriteCond %{QUERY_STRING} (javascript:|alert\(|onerror=|onload=|onclick=) [NC,OR]
+    RewriteCond %{QUERY_STRING} (eval\(|document\.|window\.|location\.|cookie) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# Запрет доступа к скрытым файлам
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Запрет доступа к конфигам и логам
+<FilesMatch "(config|database|\.log|\.ini|\.sql|\.sh|\.env)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ===== КРАСИВЫЕ URL =====
+
 # Перенаправляем все запросы без расширения на соответствующий .html файл
-# Например: /profile → /profile.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|webp|svg|ico|txt|xml|json|webmanifest)$
+RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|webp|svg|ico|txt|xml|json|webmanifest|woff|woff2|ttf|eot)$
 RewriteRule ^([^/]+)$ /$1.html [L]
 
-# Перенаправляем корень на index.html
+# Корень → index.html
 RewriteRule ^$ /index.html [L]
 
-# Обработка 404 ошибок
+# 404 ошибка → наша страница
 ErrorDocument 404 /404.html
 
-# Кэширование статики
+# ===== КЭШИРОВАНИЕ =====
 <IfModule mod_expires.c>
     ExpiresActive On
     ExpiresByType image/jpg "access plus 1 year"
@@ -21,19 +54,23 @@ ErrorDocument 404 /404.html
     ExpiresByType image/gif "access plus 1 year"
     ExpiresByType image/png "access plus 1 year"
     ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
     ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/json "access plus 1 day"
 </IfModule>
 
-# Сжатие
+# ===== СЖАТИЕ =====
 <IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml application/rss+xml
 </IfModule>
 
-# Безопасность
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set X-Frame-Options "SAMEORIGIN"
+# ===== ЗАЩИТА ОТ DDOS (лимиты) =====
+<IfModule mod_limitipconn.c>
+    # Лимит соединений с одного IP
+    MaxConnPerIP 20
 </IfModule>
+
+# ===== ЗАПРЕТ ЛИСТИНГА ДИРЕКТОРИЙ =====
+Options -Indexes
