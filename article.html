@@ -277,10 +277,10 @@
                 <button class="menu-btn" id="menuToggle" aria-label="Меню">
                     <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg" alt="Меню">
                 </button>
-                <a href="index.html" class="wiki-logo-text">Викивнезакона</a>
+                <a href="/" class="wiki-logo-text">Викивнезакона</a>
             </div>
             <div class="right-side">
-                <a href="search.html">
+                <a href="/search">
                     <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg" alt="Поиск">
                 </a>
             </div>
@@ -291,7 +291,7 @@
     <nav class="burger-menu" id="burgerMenu">
         <button class="burger-close" id="burgerClose">✕</button>
         <div class="menu-header"><span class="logo-text">Викивнезакона</span></div>
-        <a href="index.html" class="menu-item"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная</a>
+        <a href="/" class="menu-item"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная</a>
         <button class="menu-item" id="randomArticleBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg" alt="Случайная"> Случайная</button>
         <div class="menu-divider"></div>
         <button class="menu-item" id="addArticleMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Создать"> Создать статью</button>
@@ -426,7 +426,7 @@
                         e.stopPropagation();
                         auth.signOut();
                         closeMenu();
-                        window.location.href = 'index.html';
+                        window.location.href = '/';
                     });
                 }
             } else {
@@ -438,9 +438,9 @@
         loginMenuBtn.addEventListener('click', () => {
             closeMenu();
             if (currentUser) {
-                window.location.href = 'profile.html?uid=' + currentUser.uid;
+                window.location.href = '/profile?uid=' + currentUser.uid;
             } else {
-                window.location.href = 'login.html';
+                window.location.href = '/login';
             }
         });
 
@@ -485,7 +485,7 @@
                 }
             }
             const imageHtml = data.image ? `<img src="${escapeHtml(data.image)}" class="infobox-main-img" alt="Изображение">` : '';
-            // Используем rgba с непрозрачностью для нежного эффекта
+            // Используем rgba с непрозрачностью 0.12 для нежного эффекта
             const bgColor = data.bgColor || 'rgba(0, 30, 100, 0.12)';
             const parsedTitle = parseTags(data.title || 'Инфобокс');
             return `
@@ -503,7 +503,8 @@
             db.collection('articles').doc(articleId).get()
                 .then(doc => {
                     if (!doc.exists) {
-                        container.innerHTML = '<div class="error-text">Статья не найдена</div>';
+                        // Если статья не найдена → 404
+                        window.location.href = '/404';
                         return;
                     }
                     currentArticleData = { id: doc.id, ...doc.data() };
@@ -515,32 +516,11 @@
                 });
         }
 
-        // Функция для сохранения версии в историю
-        function saveToHistory(articleId, data, action, userId, username) {
-            db.collection('articleHistory').add({
-                articleId: articleId,
-                userId: userId || 'unknown',
-                username: username || 'Неизвестный',
-                action: action || 'edit',
-                timestamp: Date.now(),
-                data: {
-                    title: data.title,
-                    content: data.content,
-                    afterContent: data.afterContent || '',
-                    infobox: data.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
-                    branches: data.branches || []
-                }
-            }).catch(err => console.error('Ошибка сохранения истории:', err));
-        }
-
         function renderArticle(data) {
             const isAdmin = currentUserRole === 'admin';
             const isAuthor = currentUser && data.authorId === currentUser.uid;
-            // Редактировать могут все авторизованные пользователи
             const canEdit = !!currentUser;
-            // Историю видят только автор и админ
             const canSeeHistory = isAuthor || isAdmin;
-            // Удалять могут только админ и автор
             const canDelete = isAdmin || isAuthor;
 
             let mainText = parseTags(data.content || '');
@@ -578,7 +558,6 @@
 
             const date = data.createdAt ? new Date(data.createdAt).toDateString() : 'Дата неизвестна';
 
-            // Кнопка удаления — только для админа и автора
             let deleteHtml = '';
             if (canDelete) {
                 deleteHtml = `<button class="delete-btn" id="deleteArticleBtn">Удалить</button>`;
@@ -586,7 +565,6 @@
 
             const shareUrl = window.location.href;
 
-            // Строим тулбар с иконками
             let toolsRightHtml = `
                 <div class="tool-item">
                     <a href="#"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/language.svg" alt="Язык"></a>
@@ -596,27 +574,24 @@
                 </div>
             `;
 
-            // Кнопка редактирования (карандаш) — для всех, но если не залогинен → ведёт на reg.html
             if (canEdit) {
                 toolsRightHtml += `
                     <div class="tool-item">
-                        <a href="add.html?id=${data.id}" class="edit-btn" title="Редактировать">
+                        <a href="/add?id=${data.id}" class="edit-btn" title="Редактировать">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
                         </a>
                     </div>
                 `;
             } else {
-                // Для незарегистрированных — карандаш ведёт на reg.html
                 toolsRightHtml += `
                     <div class="tool-item">
-                        <a href="reg.html" class="edit-btn" title="Войдите чтобы редактировать">
+                        <a href="/reg" class="edit-btn" title="Войдите чтобы редактировать">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
                         </a>
                     </div>
                 `;
             }
 
-            // Кнопка истории — только для автора и админа
             if (canSeeHistory) {
                 toolsRightHtml += `
                     <div class="tool-item">
@@ -668,7 +643,6 @@
                 </div>
             `;
 
-            // Обработчики
             document.getElementById('deleteArticleBtn')?.addEventListener('click', () => {
                 if (confirm('Удалить статью?')) deleteArticle(data.id, data);
             });
@@ -684,10 +658,9 @@
             });
 
             document.getElementById('talkTab').addEventListener('click', () => {
-                window.location.href = 'talk.html?articleId=' + data.id;
+                window.location.href = '/talk?articleId=' + data.id;
             });
 
-            // Обработчики для истории
             const historyBtn = document.getElementById('historyBtn');
             const historyLink = document.getElementById('historyLink');
             const openHistory = () => {
@@ -700,7 +673,7 @@
             if (historyBtn) historyBtn.addEventListener('click', openHistory);
             if (historyLink) historyLink.addEventListener('click', openHistory);
 
-            history.replaceState(null, '', '?id=' + data.id);
+            history.replaceState(null, '', '/article?id=' + data.id);
         }
 
         // ===== ИСТОРИЯ ИЗМЕНЕНИЙ =====
@@ -799,12 +772,6 @@
             }
         }
 
-        // Сохраняем в историю при создании статьи (вызывается из add.html через saveArticle)
-        // Добавляем глобальную функцию для сохранения истории из add.html
-        window.saveArticleHistory = function(articleId, data, action) {
-            saveToHistory(articleId, data, action || 'create', currentUser?.uid, currentUsername);
-        };
-
         function deleteArticle(articleId, data) {
             if (!currentUser || (currentUserRole !== 'admin' && data.authorId !== currentUser.uid)) {
                 alert('Только администраторы и автор могут удалять статьи');
@@ -820,7 +787,7 @@
                 .then(() => {
                     db.collection('logs').add({ action: 'delete', articleId, title: data.title, userId: currentUser.uid, timestamp: Date.now() });
                     alert('Статья удалена');
-                    window.location.href = 'index.html';
+                    window.location.href = '/';
                 });
             }).catch(err => alert('Ошибка: ' + err.message));
         }
@@ -831,7 +798,7 @@
                 const ids = [];
                 snapshot.forEach(doc => ids.push(doc.id));
                 if (ids.length === 0) { alert('Статей пока нет'); return; }
-                window.location.href = 'article.html?id=' + ids[Math.floor(Math.random() * ids.length)];
+                window.location.href = '/article?id=' + ids[Math.floor(Math.random() * ids.length)];
             });
         });
 
@@ -839,10 +806,10 @@
             closeMenu();
             if (!currentUser) {
                 alert('Войдите в систему');
-                window.location.href = 'login.html';
+                window.location.href = '/login';
                 return;
             }
-            window.location.href = 'add.html';
+            window.location.href = '/add';
         });
 
         telegramLink.addEventListener('click', (e) => {

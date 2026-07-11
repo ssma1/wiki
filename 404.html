@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Страница не найдена — Викивнезакона</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f8f9fa; color: #202122; min-height: 100vh; display: flex; flex-direction: column; }
+
+        .wiki-header { background: #EBECF0; border-bottom: 1px solid #eaecf0; padding: 8px 12px; position: sticky; top: 0; z-index: 1000; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .left-side { display: flex; align-items: center; gap: 10px; }
+        .menu-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; }
+        .menu-btn img { width: 24px; height: 24px; }
+        .wiki-logo-text { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 22px; font-weight: 400; color: #000; text-decoration: none; letter-spacing: 0.5px; line-height: 1.2; }
+        .right-side { display: flex; align-items: center; gap: 12px; }
+        .right-side a { display: flex; align-items: center; text-decoration: none; }
+        .right-side img { width: 24px; height: 24px; }
+
+        .burger-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .burger-overlay.active { display: block; opacity: 1; }
+        .burger-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #ffffff; z-index: 3000; transition: left 0.3s ease; box-shadow: 2px 0 8px rgba(0,0,0,0.15); overflow-y: auto; padding: 16px 0; }
+        .burger-menu.open { left: 0; }
+        .burger-menu .menu-header { padding: 0 16px 16px 16px; border-bottom: 1px solid #eaecf0; margin-bottom: 12px; }
+        .burger-menu .menu-header .logo-text { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 22px; color: #000; }
+        .burger-menu .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #202122; text-decoration: none; font-size: 15px; border-bottom: 1px solid #f8f9fa; transition: background 0.15s; cursor: pointer; background: none; border-left: none; border-right: none; border-top: none; width: 100%; text-align: left; font-family: inherit; }
+        .burger-menu .menu-item:hover { background: #eaecf0; }
+        .burger-menu .menu-item img { width: 20px; height: 20px; flex-shrink: 0; }
+        .burger-menu .menu-divider { height: 1px; background: #eaecf0; margin: 8px 16px; }
+        .burger-menu .menu-footer { padding: 16px; font-size: 13px; color: #72777d; border-top: 1px solid #eaecf0; margin-top: 12px; }
+        .burger-menu .menu-footer a { color: #36c; text-decoration: none; }
+        .burger-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #72777d; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .error-icon { width: 80px; height: 80px; margin-bottom: 20px; opacity: 0.7; }
+        .error-title { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 36px; font-weight: 400; color: #202122; margin-bottom: 12px; }
+        .error-text { font-size: 18px; color: #54595d; margin-bottom: 8px; max-width: 500px; }
+        .error-detail { font-size: 14px; color: #72777d; margin-bottom: 24px; }
+        .error-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .error-actions .btn-primary { padding: 10px 28px; background: #36c; color: #fff; border: none; border-radius: 2px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.15s; text-decoration: none; font-family: inherit; }
+        .error-actions .btn-primary:hover { background: #2a4b8d; }
+        .error-actions .btn-secondary { padding: 10px 28px; background: #fff; color: #202122; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 16px; cursor: pointer; transition: background 0.15s; text-decoration: none; font-family: inherit; }
+        .error-actions .btn-secondary:hover { background: #eaecf0; }
+
+        .wiki-footer { background: #eaecf0; margin-top: 24px; padding: 20px 16px; border-top: 1px solid #c8ccd1; text-align: center; }
+        .wiki-footer .footer-brand { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 22px; margin-bottom: 8px; }
+        .wiki-footer .footer-links { font-size: 13px; color: #36c; line-height: 2; }
+        .wiki-footer .footer-links a { color: #36c; text-decoration: none; margin: 0 4px; }
+        .wiki-footer .footer-links a:hover { text-decoration: underline; }
+        .wiki-footer .footer-copy { font-size: 12px; color: #72777d; margin-top: 12px; }
+
+        .auth-status { font-size: 13px; color: #72777d; padding: 4px 16px 12px 16px; }
+        .auth-status .user-email { color: #202122; font-weight: 500; }
+        .auth-status .logout-btn { background: none; border: none; color: #d33; cursor: pointer; font-size: 13px; padding: 0; text-decoration: underline; font-family: inherit; }
+
+        @media (max-width: 768px) {
+            .container { padding: 30px 16px; }
+            .error-icon { width: 60px; height: 60px; }
+            .error-title { font-size: 28px; }
+            .error-text { font-size: 16px; }
+            .wiki-logo-text { font-size: 20px; }
+            .burger-menu { width: 280px; left: -280px; }
+        }
+        @media (min-width: 769px) {
+            .wiki-logo-text { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="wiki-header">
+        <div class="header-content">
+            <div class="left-side">
+                <button class="menu-btn" id="menuToggle" aria-label="Меню">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg" alt="Меню">
+                </button>
+                <a href="/" class="wiki-logo-text">Викивнезакона</a>
+            </div>
+            <div class="right-side">
+                <a href="/search">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg" alt="Поиск">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="burger-overlay" id="burgerOverlay"></div>
+    <nav class="burger-menu" id="burgerMenu">
+        <button class="burger-close" id="burgerClose">✕</button>
+        <div class="menu-header"><span class="logo-text">Викивнезакона</span></div>
+        <a href="/" class="menu-item"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная</a>
+        <button class="menu-item" id="randomArticleBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg" alt="Случайная"> Случайная</button>
+        <div class="menu-divider"></div>
+        <button class="menu-item" id="addArticleMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Создать"> Создать статью</button>
+        <div class="menu-divider"></div>
+        <div class="auth-status" id="authStatus"><span id="authStatusText">Загрузка...</span></div>
+        <button class="menu-item" id="loginMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg" alt="Профиль" style="filter: invert(0.3);"><span id="loginMenuText">Войти</span></button>
+        <div class="menu-divider"></div>
+        <a href="#" class="menu-item" id="telegramLink">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202122" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Подписаться на ТГК
+        </a>
+        <div class="menu-footer"><a href="#">Описание</a> • <a href="#">Отказ от ответственности</a><br><span style="font-size: 11px;">© Викивнезакона</span></div>
+    </nav>
+
+    <main class="container">
+        <!-- SVG иконка вместо эмодзи 📄 -->
+        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="#d33" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        
+        <h1 class="error-title">Страница не найдена</h1>
+        <p class="error-text">Извините, такой статьи в Викивнезакона пока нет.</p>
+        <p class="error-detail">Возможно, вы ошиблись в адресе, или статья была удалена.</p>
+        
+        <div class="error-actions">
+            <a href="/add" class="btn-primary" id="createArticleBtn">Создать эту статью</a>
+            <a href="/" class="btn-secondary">Вернуться на главную</a>
+        </div>
+    </main>
+
+    <footer class="wiki-footer">
+        <div class="footer-brand">Викивнезакона</div>
+        <div class="footer-links">
+            <a href="#">Политика конфиденциальности</a> •
+            <a href="#">Свяжитесь с нами</a> •
+            <a href="#">Отказ от ответственности</a>
+        </div>
+        <div class="footer-copy">
+            Текст доступен по лицензии Creative Commons Attribution-ShareAlike
+        </div>
+    </footer>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyArcDmBhon_3xLtksvF-9M54HP8bHj9hII",
+            authDomain: "sosial2-440f4.firebaseapp.com",
+            databaseURL: "https://sosial2-440f4-default-rtdb.firebaseio.com",
+            projectId: "sosial2-440f4",
+            storageBucket: "sosial2-440f4.firebasestorage.app",
+            messagingSenderId: "365488411767",
+            appId: "1:365488411767:web:55f9e4b2db543c2c8aa272",
+            measurementId: "G-0X53TXRXW9"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const menuToggle = document.getElementById('menuToggle');
+        const burgerMenu = document.getElementById('burgerMenu');
+        const burgerOverlay = document.getElementById('burgerOverlay');
+        const burgerClose = document.getElementById('burgerClose');
+        const authStatusText = document.getElementById('authStatusText');
+        const loginMenuText = document.getElementById('loginMenuText');
+        const loginMenuBtn = document.getElementById('loginMenuBtn');
+        const randomArticleBtn = document.getElementById('randomArticleBtn');
+        const addArticleMenuBtn = document.getElementById('addArticleMenuBtn');
+        const createArticleBtn = document.getElementById('createArticleBtn');
+        const telegramLink = document.getElementById('telegramLink');
+
+        function openMenu() { burgerMenu.classList.add('open'); burgerOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { burgerMenu.classList.remove('open'); burgerOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+        menuToggle.addEventListener('click', openMenu);
+        burgerClose.addEventListener('click', closeMenu);
+        burgerOverlay.addEventListener('click', closeMenu);
+
+        let currentUser = null;
+        let currentUserRole = 'user';
+        let currentUsername = '';
+
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            if (user) {
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        currentUserRole = doc.data().role || 'user';
+                        currentUsername = doc.data().username || user.email.split('@')[0] || 'Пользователь';
+                    } else {
+                        currentUserRole = 'user';
+                        currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    }
+                    updateAuthUI();
+                }).catch(() => {
+                    currentUserRole = 'user';
+                    currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    updateAuthUI();
+                });
+            } else {
+                currentUserRole = 'user';
+                currentUsername = '';
+                updateAuthUI();
+            }
+        });
+
+        function updateAuthUI() {
+            if (currentUser) {
+                authStatusText.innerHTML = `<span class="user-email">${escapeHtml(currentUsername)}</span> (${currentUserRole === 'admin' ? 'админ' : 'пользователь'})<br><button class="logout-btn" id="logoutBtn">Выйти</button>`;
+                loginMenuText.textContent = escapeHtml(currentUsername);
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        auth.signOut();
+                        closeMenu();
+                        window.location.href = '/';
+                    });
+                }
+            } else {
+                authStatusText.textContent = 'Вы не авторизованы';
+                loginMenuText.textContent = 'Войти';
+            }
+        }
+
+        loginMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (currentUser) {
+                window.location.href = '/profile?uid=' + currentUser.uid;
+            } else {
+                window.location.href = '/login';
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getRequestedArticle() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (id) return id;
+            
+            const referer = document.referrer;
+            if (referer) {
+                const match = referer.match(/[?&]id=([^&]+)/);
+                if (match) return decodeURIComponent(match[1]);
+            }
+            
+            const path = window.location.pathname.replace(/^\/+/, '');
+            if (path && path !== '404.html') {
+                return decodeURIComponent(path);
+            }
+            
+            return null;
+        }
+
+        const articleName = getRequestedArticle();
+
+        createArticleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!currentUser) {
+                alert('Пожалуйста, войдите в систему для создания статьи');
+                window.location.href = '/login';
+                return;
+            }
+            window.location.href = '/add?title=' + encodeURIComponent(articleName || '');
+        });
+
+        randomArticleBtn.addEventListener('click', () => {
+            closeMenu();
+            db.collection('articles').get().then(snapshot => {
+                const ids = [];
+                snapshot.forEach(doc => ids.push(doc.id));
+                if (ids.length === 0) {
+                    alert('Статей пока нет');
+                    return;
+                }
+                window.location.href = '/article?id=' + ids[Math.floor(Math.random() * ids.length)];
+            });
+        });
+
+        addArticleMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (!currentUser) {
+                alert('Пожалуйста, войдите в систему');
+                window.location.href = '/login';
+                return;
+            }
+            window.location.href = '/add';
+        });
+
+        telegramLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://t.me/your_channel', '_blank');
+            closeMenu();
+        });
+    </script>
+</body>
+</html>
