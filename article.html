@@ -485,8 +485,21 @@
                 }
             }
             const imageHtml = data.image ? `<img src="${escapeHtml(data.image)}" class="infobox-main-img" alt="Изображение">` : '';
-            // Используем rgba с непрозрачностью 0.12 для нежного эффекта
-            const bgColor = data.bgColor || 'rgba(0, 30, 100, 0.12)';
+            // ПОЛУПРОЗРАЧНОСТЬ — точно как в add.html (rgba с opacity 0.12)
+            let bgColor = 'rgba(0, 30, 100, 0.12)';
+            if (data.bgColor) {
+                // Если пришёл hex или rgb, конвертируем в rgba с opacity 0.12
+                if (data.bgColor.startsWith('#')) {
+                    const hex = data.bgColor.replace('#', '');
+                    const r = parseInt(hex.substring(0, 2), 16);
+                    const g = parseInt(hex.substring(2, 4), 16);
+                    const b = parseInt(hex.substring(4, 6), 16);
+                    bgColor = `rgba(${r}, ${g}, ${b}, 0.12)`;
+                } else if (data.bgColor.startsWith('rgb')) {
+                    // Если уже rgba, просто используем
+                    bgColor = data.bgColor;
+                }
+            }
             const parsedTitle = parseTags(data.title || 'Инфобокс');
             return `
                 <table class="infobox">
@@ -503,7 +516,6 @@
             db.collection('articles').doc(articleId).get()
                 .then(doc => {
                     if (!doc.exists) {
-                        // Если статья не найдена → 404
                         window.location.href = '/404';
                         return;
                     }
@@ -676,7 +688,7 @@
             history.replaceState(null, '', '/article?id=' + data.id);
         }
 
-        // ===== ИСТОРИЯ ИЗМЕНЕНИЙ =====
+        // ===== ИСТОРИЯ ИЗМЕНЕНИЙ — ИСПРАВЛЕННАЯ =====
         async function loadHistory(articleId) {
             historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
             try {
@@ -698,11 +710,12 @@
 
                 let html = '';
                 historyItems.forEach((item, index) => {
-                    const date = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Дата неизвестна';
+                    const date = item.timestamp ? new Date(item.timestamp.toDate ? item.timestamp.toDate() : item.timestamp).toLocaleString() : 'Дата неизвестна';
                     const user = item.username || 'Неизвестный пользователь';
-                    const actionText = item.action === 'create' ? 'Создание статьи' : 
-                                      item.action === 'restore' ? 'Восстановление' : 
-                                      item.action === 'edit' ? 'Редактирование' : 'Изменение';
+                    let actionText = 'Изменение';
+                    if (item.action === 'create') actionText = '📝 Создание статьи';
+                    else if (item.action === 'restore') actionText = '🔄 Восстановление';
+                    else if (item.action === 'edit') actionText = '✏️ Редактирование';
                     
                     html += `
                         <div class="history-item">
@@ -757,18 +770,18 @@
                     userId: currentUser?.uid || 'unknown',
                     username: currentUsername || 'Неизвестный',
                     action: 'restore',
-                    timestamp: Date.now(),
+                    timestamp: new Date(),
                     data: restoredData,
                     restoredFrom: historyId
                 });
 
-                alert('Версия восстановлена!');
+                alert('✅ Версия восстановлена!');
                 historyModal.classList.remove('active');
                 document.body.style.overflow = '';
                 loadArticle(articleId);
             } catch (err) {
                 console.error('Ошибка восстановления:', err);
-                alert('Ошибка восстановления: ' + err.message);
+                alert('❌ Ошибка восстановления: ' + err.message);
             }
         }
 
