@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Регистрация — Викивнезакона</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f8f9fa;
+            color: #202122;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .reg-container {
+            background: #ffffff;
+            border: 1px solid #a2a9b1;
+            border-radius: 4px;
+            padding: 32px 28px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .reg-logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .reg-logo img {
+            max-width: 180px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .reg-logo .logo-text {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 28px;
+            color: #000;
+            display: block;
+            margin-top: 8px;
+        }
+
+        .reg-title {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 22px;
+            font-weight: 400;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #202122;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #202122;
+            margin-bottom: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+
+        .form-group input:focus {
+            border-color: #36c;
+            box-shadow: 0 0 0 1px #36c;
+            outline: none;
+        }
+
+        .form-group .hint-text {
+            font-size: 12px;
+            color: #72777d;
+            margin-top: 4px;
+        }
+
+        .form-group .hint-text a {
+            color: #36c;
+            text-decoration: none;
+        }
+
+        .form-group .hint-text a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 12px;
+            background: #36c;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        .btn-register:hover {
+            background: #2a4b8d;
+        }
+
+        .btn-register:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .reg-footer {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #54595d;
+        }
+
+        .reg-footer a {
+            color: #36c;
+            text-decoration: none;
+        }
+
+        .reg-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fde7e7;
+            border: 1px solid #d33;
+            color: #d33;
+            padding: 10px 12px;
+            border-radius: 2px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #e7f5e7;
+            border: 1px solid #2a8;
+            color: #2a8;
+            padding: 10px 12px;
+            border-radius: 2px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 12px;
+            color: #36c;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .password-requirements {
+            font-size: 12px;
+            color: #72777d;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .password-requirements .valid {
+            color: #2a8;
+        }
+
+        .password-requirements .invalid {
+            color: #d33;
+        }
+
+        @media (max-width: 480px) {
+            .reg-container {
+                padding: 24px 16px;
+            }
+            .reg-logo img {
+                max-width: 140px;
+            }
+            .reg-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="reg-container">
+        <div class="reg-logo">
+            <img src="https://i.ibb.co/bRPB7PD3/2172-20250927182930.png" alt="Викивнезакона">
+            <span class="logo-text">Викивнезакона</span>
+        </div>
+
+        <h1 class="reg-title">Регистрация</h1>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="regForm">
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input type="text" id="username" placeholder="Введите имя пользователя" required>
+                <div class="hint-text">Будет отображаться в вашем профиле</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Введите email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="Введите пароль" required>
+                <div class="password-requirements" id="passwordRequirements">
+                    <span id="reqLength">• Минимум 6 символов</span><br>
+                    <span id="reqLower">• Строчная буква</span><br>
+                    <span id="reqUpper">• Заглавная буква</span><br>
+                    <span id="reqNumber">• Цифра</span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-register" id="regBtn">Зарегистрироваться</button>
+        </form>
+
+        <div class="reg-footer">
+            Уже есть аккаунт? <a href="login.html">Войти</a>
+        </div>
+
+        <a href="index.html" class="back-link">← Вернуться на главную</a>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyArcDmBhon_3xLtksvF-9M54HP8bHj9hII",
+            authDomain: "sosial2-440f4.firebaseapp.com",
+            databaseURL: "https://sosial2-440f4-default-rtdb.firebaseio.com",
+            projectId: "sosial2-440f4",
+            storageBucket: "sosial2-440f4.firebasestorage.app",
+            messagingSenderId: "365488411767",
+            appId: "1:365488411767:web:55f9e4b2db543c2c8aa272",
+            measurementId: "G-0X53TXRXW9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const form = document.getElementById('regForm');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const regBtn = document.getElementById('regBtn');
+        const errorMsg = document.getElementById('errorMessage');
+        const successMsg = document.getElementById('successMessage');
+
+        // Password validation
+        const reqLength = document.getElementById('reqLength');
+        const reqLower = document.getElementById('reqLower');
+        const reqUpper = document.getElementById('reqUpper');
+        const reqNumber = document.getElementById('reqNumber');
+
+        function validatePassword(password) {
+            const hasLength = password.length >= 6;
+            const hasLower = /[a-z]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            
+            reqLength.className = hasLength ? 'valid' : 'invalid';
+            reqLower.className = hasLower ? 'valid' : 'invalid';
+            reqUpper.className = hasUpper ? 'valid' : 'invalid';
+            reqNumber.className = hasNumber ? 'valid' : 'invalid';
+            
+            return hasLength && hasLower && hasUpper && hasNumber;
+        }
+
+        passwordInput.addEventListener('input', () => {
+            validatePassword(passwordInput.value);
+        });
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.className = 'error-message show';
+            successMsg.className = 'success-message';
+        }
+
+        function showSuccess(msg) {
+            successMsg.textContent = msg;
+            successMsg.className = 'success-message show';
+            errorMsg.className = 'error-message';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!username || !email || !password) {
+                showError('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            if (username.length < 2) {
+                showError('Имя пользователя должно содержать минимум 2 символа');
+                return;
+            }
+
+            if (!validatePassword(password)) {
+                showError('Пароль не соответствует требованиям');
+                return;
+            }
+
+            regBtn.disabled = true;
+            regBtn.textContent = 'Регистрация...';
+            showError('');
+            showSuccess('');
+
+            try {
+                const userCred = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCred.user;
+
+                // Save username to Firestore
+                await db.collection('users').doc(user.uid).set({
+                    email: email,
+                    username: username,
+                    role: 'user',
+                    createdAt: Date.now()
+                });
+
+                await user.updateProfile({
+                    displayName: username
+                });
+
+                showSuccess('Регистрация успешна!');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+            } catch (err) {
+                let msg = 'Ошибка регистрации';
+                if (err.code === 'auth/email-already-in-use') {
+                    msg = 'Этот email уже используется';
+                } else if (err.code === 'auth/invalid-email') {
+                    msg = 'Некорректный email';
+                } else if (err.code === 'auth/weak-password') {
+                    msg = 'Слишком слабый пароль';
+                } else {
+                    msg = err.message;
+                }
+                showError(msg);
+                regBtn.disabled = false;
+                regBtn.textContent = 'Зарегистрироваться';
+            }
+        });
+
+        // Check if already logged in
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>

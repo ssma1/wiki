@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Создание статьи — Викивнезакона</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f8f9fa;
+            color: #202122;
+            padding-bottom: 40px;
+        }
+
+        .wiki-header {
+            background: #ffffff;
+            border-bottom: 1px solid #eaecf0;
+            padding: 8px 12px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .left-side {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-btn img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .wiki-logo-text {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 20px;
+            font-weight: 400;
+            color: #000;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .right-side {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .right-side a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .right-side img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .burger-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .burger-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .burger-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background: #ffffff;
+            z-index: 3000;
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            padding: 16px 0;
+        }
+
+        .burger-menu.open {
+            left: 0;
+        }
+
+        .burger-menu .menu-header {
+            padding: 0 16px 16px 16px;
+            border-bottom: 1px solid #eaecf0;
+            margin-bottom: 12px;
+        }
+
+        .burger-menu .menu-header .logo-text {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 22px;
+            color: #000;
+        }
+
+        .burger-menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #202122;
+            text-decoration: none;
+            font-size: 15px;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background 0.15s;
+            cursor: pointer;
+            background: none;
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .burger-menu .menu-item:hover {
+            background: #eaecf0;
+        }
+
+        .burger-menu .menu-item img {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .burger-menu .menu-divider {
+            height: 1px;
+            background: #eaecf0;
+            margin: 8px 16px;
+        }
+
+        .burger-menu .menu-footer {
+            padding: 16px;
+            font-size: 13px;
+            color: #72777d;
+            border-top: 1px solid #eaecf0;
+            margin-top: 12px;
+        }
+
+        .burger-menu .menu-footer a {
+            color: #36c;
+            text-decoration: none;
+        }
+
+        .burger-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #72777d;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .form-title {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 26px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            color: #202122;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 15px;
+            color: #202122;
+        }
+
+        .form-group label .required {
+            color: #d33;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #36c;
+            box-shadow: 0 0 0 1px #36c;
+            outline: none;
+        }
+
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.7;
+        }
+
+        .form-group .hint {
+            font-size: 13px;
+            color: #72777d;
+            margin-top: 4px;
+            line-height: 1.6;
+        }
+
+        .form-group .hint code {
+            background: #f0f0f0;
+            padding: 1px 6px;
+            border-radius: 2px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        /* ===== TOOLBAR ===== */
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            padding: 8px 10px;
+            background: #f8f9fa;
+            border: 1px solid #a2a9b1;
+            border-bottom: none;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .editor-toolbar button {
+            padding: 4px 10px;
+            background: #fff;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.15s;
+            color: #202122;
+        }
+
+        .editor-toolbar button:hover {
+            background: #eaecf0;
+            border-color: #36c;
+        }
+
+        .editor-toolbar .separator {
+            width: 1px;
+            background: #a2a9b1;
+            margin: 0 4px;
+        }
+
+        .editor-toolbar .color-picker-wrap {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .editor-toolbar .color-picker-wrap input[type="color"] {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .form-group .editor-textarea {
+            border-radius: 0 0 2px 2px;
+            border-top: none;
+        }
+
+        /* ===== INFOBOX ===== */
+        .infobox-builder {
+            background: #f8f9fa;
+            border: 1px solid #eaecf0;
+            border-radius: 2px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .infobox-builder .infobox-title-section {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #202122;
+        }
+
+        .infobox-builder .infobox-sub {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .infobox-builder .infobox-sub .form-group {
+            margin-bottom: 0;
+        }
+
+        .infobox-builder .infobox-sub .form-group label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .infobox-field {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .infobox-field input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 14px;
+            min-width: 80px;
+        }
+
+        .infobox-field .remove-field {
+            background: #d33;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.15s;
+        }
+
+        .infobox-field .remove-field:hover {
+            background: #b22222;
+        }
+
+        .infobox-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .infobox-actions button {
+            padding: 6px 14px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .infobox-actions button:hover {
+            background: #eaecf0;
+        }
+
+        .infobox-image-input {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .infobox-image-input input[type="text"] {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
+        .infobox-image-input .upload-btn {
+            padding: 6px 14px;
+            background: #36c;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        .infobox-image-input .upload-btn:hover {
+            background: #2a4b8d;
+        }
+
+        .infobox-image-input .upload-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .upload-progress {
+            display: none;
+            font-size: 13px;
+            color: #36c;
+            margin-top: 4px;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        /* ===== SECTIONS (ЗАКЛАДКИ) ===== */
+        .sections-builder {
+            background: #f8f9fa;
+            border: 1px solid #eaecf0;
+            border-radius: 2px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .sections-builder .sections-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 16px;
+            color: #202122;
+        }
+
+        .sections-builder .sections-hint {
+            font-size: 13px;
+            color: #72777d;
+            margin-bottom: 12px;
+        }
+
+        .section-item {
+            background: #fff;
+            border: 1px solid #eaecf0;
+            border-radius: 2px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+        }
+
+        .section-item .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .section-item .section-header input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .section-item .section-header .remove-section {
+            background: #d33;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.15s;
+        }
+
+        .section-item .section-header .remove-section:hover {
+            background: #b22222;
+        }
+
+        .section-item textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+            transition: border-color 0.2s;
+        }
+
+        .section-item textarea:focus {
+            border-color: #36c;
+            box-shadow: 0 0 0 1px #36c;
+            outline: none;
+        }
+
+        .section-item .section-collapse {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+            font-size: 13px;
+            color: #72777d;
+        }
+
+        .section-item .section-collapse input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #36c;
+        }
+
+        .sections-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sections-actions button {
+            padding: 6px 14px;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .sections-actions button:hover {
+            background: #eaecf0;
+        }
+
+        /* ===== PREVIEW ===== */
+        .preview-section {
+            background: #fff;
+            border: 1px solid #eaecf0;
+            border-radius: 2px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .preview-section .preview-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: #54595d;
+        }
+
+        .preview-content {
+            font-size: 14px;
+            line-height: 1.7;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 2px;
+            min-height: 80px;
+            overflow-wrap: break-word;
+        }
+
+        .preview-content p {
+            margin-bottom: 10px;
+        }
+
+        .preview-content .ref {
+            color: #36c;
+            font-size: 12px;
+            vertical-align: super;
+        }
+
+        .preview-content b {
+            font-weight: 700;
+        }
+
+        .preview-content .preview-infobox {
+            float: right;
+            width: 260px;
+            margin: 0 0 12px 16px;
+            background: #f8f9fa;
+            border: 1px solid #a2a9b1;
+            font-size: 13px;
+            padding: 0;
+            border-collapse: collapse;
+        }
+
+        .preview-content .preview-infobox .preview-infobox-title {
+            font-weight: 600;
+            text-align: center;
+            background: #eaecf0;
+            padding: 6px 10px;
+            font-size: 15px;
+        }
+
+        .preview-content .preview-infobox .preview-infobox-img {
+            display: block;
+            max-width: 100%;
+            max-height: 150px;
+            margin: 4px auto;
+        }
+
+        .preview-content .preview-infobox .preview-infobox-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 10px;
+            border-bottom: 1px solid #eaecf0;
+        }
+
+        .preview-content .preview-infobox .preview-infobox-row .key {
+            font-weight: 600;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 2px;
+        }
+
+        .preview-content .preview-infobox .preview-infobox-row:last-child {
+            border-bottom: none;
+        }
+
+        .preview-content .preview-section-block {
+            margin: 12px 0;
+            padding: 10px 14px;
+            background: #f8f9fa;
+            border-left: 4px solid #36c;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .preview-content .preview-section-block .preview-section-title {
+            font-weight: 600;
+            font-size: 17px;
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            margin-bottom: 4px;
+        }
+
+        .preview-content .preview-section-block.collapsed {
+            opacity: 0.7;
+            border-left-color: #a2a9b1;
+        }
+
+        /* ===== SUBMIT ===== */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-top: 8px;
+        }
+
+        .form-actions .btn-primary {
+            padding: 10px 28px;
+            background: #36c;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .form-actions .btn-primary:hover {
+            background: #2a4b8d;
+        }
+
+        .form-actions .btn-secondary {
+            padding: 10px 28px;
+            background: #fff;
+            color: #202122;
+            border: 1px solid #a2a9b1;
+            border-radius: 2px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .form-actions .btn-secondary:hover {
+            background: #eaecf0;
+        }
+
+        .form-actions .btn-danger {
+            padding: 10px 28px;
+            background: #d33;
+            color: #fff;
+            border: none;
+            border-radius: 2px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+
+        .form-actions .btn-danger:hover {
+            background: #b22222;
+        }
+
+        .form-status {
+            padding: 12px 16px;
+            border-radius: 2px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .form-status.error {
+            display: block;
+            background: #fde7e7;
+            border: 1px solid #d33;
+            color: #d33;
+        }
+
+        .form-status.success {
+            display: block;
+            background: #e7f5e7;
+            border: 1px solid #2a8;
+            color: #2a8;
+        }
+
+        .auth-warning {
+            text-align: center;
+            padding: 40px 20px;
+            color: #72777d;
+        }
+
+        .auth-warning a {
+            color: #36c;
+            text-decoration: none;
+        }
+
+        .auth-warning a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-status {
+            font-size: 13px;
+            color: #72777d;
+            padding: 4px 16px 12px 16px;
+        }
+
+        .auth-status .user-email {
+            color: #202122;
+            font-weight: 500;
+        }
+
+        .auth-status .logout-btn {
+            background: none;
+            border: none;
+            color: #d33;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0;
+            text-decoration: underline;
+            font-family: inherit;
+        }
+
+        .loading-text {
+            text-align: center;
+            padding: 40px 0;
+            color: #72777d;
+        }
+
+        .section-count-badge {
+            font-size: 12px;
+            color: #72777d;
+            font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            .form-title {
+                font-size: 22px;
+            }
+            .infobox-builder .infobox-sub {
+                grid-template-columns: 1fr;
+            }
+            .wiki-logo-text {
+                font-size: 17px;
+            }
+            .burger-menu {
+                width: 280px;
+                left: -280px;
+            }
+            .preview-content .preview-infobox {
+                float: none;
+                width: 100%;
+                margin: 0 0 12px 0;
+            }
+            .editor-toolbar {
+                gap: 3px;
+                padding: 6px 8px;
+            }
+            .editor-toolbar button {
+                padding: 3px 8px;
+                font-size: 12px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .wiki-logo-text {
+                font-size: 24px;
+            }
+            .container {
+                padding: 24px;
+            }
+            .form-title {
+                font-size: 30px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="wiki-header">
+        <div class="header-content">
+            <div class="left-side">
+                <button class="menu-btn" id="menuToggle" aria-label="Меню">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg" alt="Меню">
+                </button>
+                <a href="index.html" class="wiki-logo-text">Викивнезакона</a>
+            </div>
+            <div class="right-side">
+                <a href="search.html">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg" alt="Поиск">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="burger-overlay" id="burgerOverlay"></div>
+    <nav class="burger-menu" id="burgerMenu">
+        <button class="burger-close" id="burgerClose">✕</button>
+        <div class="menu-header">
+            <span class="logo-text">Викивнезакона</span>
+        </div>
+        <a href="index.html" class="menu-item">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная
+        </a>
+        <button class="menu-item" id="randomArticleBtn">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg" alt="Случайная"> Случайная
+        </button>
+        <div class="menu-divider"></div>
+        <button class="menu-item" id="addArticleMenuBtn">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Создать"> Создать статью
+        </button>
+        <div class="menu-divider"></div>
+        <div class="auth-status" id="authStatus">
+            <span id="authStatusText">Загрузка...</span>
+        </div>
+        <button class="menu-item" id="loginMenuBtn">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg" alt="Профиль" style="filter: invert(0.3);">
+            <span id="loginMenuText">Войти</span>
+        </button>
+        <div class="menu-divider"></div>
+        <a href="#" class="menu-item" id="telegramLink">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202122" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+            Подписаться на ТГК
+        </a>
+        <div class="menu-footer">
+            <a href="#">Описание</a> • <a href="#">Отказ от ответственности</a><br>
+            <span style="font-size: 11px;">© Викивнезакона</span>
+        </div>
+    </nav>
+
+    <main class="container" id="appContainer">
+        <div class="loading-text">Загрузка...</div>
+    </main>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyArcDmBhon_3xLtksvF-9M54HP8bHj9hII",
+            authDomain: "sosial2-440f4.firebaseapp.com",
+            databaseURL: "https://sosial2-440f4-default-rtdb.firebaseio.com",
+            projectId: "sosial2-440f4",
+            storageBucket: "sosial2-440f4.firebasestorage.app",
+            messagingSenderId: "365488411767",
+            appId: "1:365488411767:web:55f9e4b2db543c2c8aa272",
+            measurementId: "G-0X53TXRXW9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const container = document.getElementById('appContainer');
+        const menuToggle = document.getElementById('menuToggle');
+        const burgerMenu = document.getElementById('burgerMenu');
+        const burgerOverlay = document.getElementById('burgerOverlay');
+        const burgerClose = document.getElementById('burgerClose');
+        const authStatusText = document.getElementById('authStatusText');
+        const loginMenuText = document.getElementById('loginMenuText');
+        const loginMenuBtn = document.getElementById('loginMenuBtn');
+        const randomArticleBtn = document.getElementById('randomArticleBtn');
+        const addArticleMenuBtn = document.getElementById('addArticleMenuBtn');
+        const telegramLink = document.getElementById('telegramLink');
+
+        function openMenu() {
+            burgerMenu.classList.add('open');
+            burgerOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            burgerMenu.classList.remove('open');
+            burgerOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        menuToggle.addEventListener('click', openMenu);
+        burgerClose.addEventListener('click', closeMenu);
+        burgerOverlay.addEventListener('click', closeMenu);
+
+        let currentUser = null;
+        let currentUserRole = 'user';
+        let currentUsername = '';
+        let isEditMode = false;
+        let editArticleId = null;
+
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            if (user) {
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        currentUserRole = doc.data().role || 'user';
+                        currentUsername = doc.data().username || user.email.split('@')[0] || 'Пользователь';
+                    } else {
+                        currentUserRole = 'user';
+                        currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    }
+                    updateAuthUI();
+                    initPage();
+                }).catch(() => {
+                    currentUserRole = 'user';
+                    currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    updateAuthUI();
+                    initPage();
+                });
+            } else {
+                currentUserRole = 'user';
+                currentUsername = '';
+                updateAuthUI();
+                initPage();
+            }
+        });
+
+        function updateAuthUI() {
+            if (currentUser) {
+                authStatusText.innerHTML = `<span class="user-email">${escapeHtml(currentUsername)}</span> (${currentUserRole === 'admin' ? 'админ' : 'пользователь'})<br>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>`;
+                loginMenuText.textContent = escapeHtml(currentUsername);
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        auth.signOut();
+                        closeMenu();
+                        window.location.href = 'index.html';
+                    });
+                }
+            } else {
+                authStatusText.textContent = 'Вы не авторизованы';
+                loginMenuText.textContent = 'Войти';
+            }
+        }
+
+        loginMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (currentUser) {
+                window.location.href = 'profile.html?uid=' + currentUser.uid;
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        const IMGUR_API_KEY = 'd26a847b2da5d450bddccc004bc7add5';
+        const IMGUR_UPLOAD_URL = 'https://api.imgur.com/3/image';
+
+        async function uploadToImgur(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            const response = await fetch(IMGUR_UPLOAD_URL, {
+                method: 'POST',
+                headers: { 'Authorization': 'Client-ID ' + IMGUR_API_KEY },
+                body: formData
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.data?.error || 'Ошибка загрузки');
+            return data.data.link;
+        }
+
+        randomArticleBtn.addEventListener('click', () => {
+            closeMenu();
+            db.collection('articles').get().then(snapshot => {
+                const ids = [];
+                snapshot.forEach(doc => ids.push(doc.id));
+                if (ids.length === 0) { alert('Статей пока нет'); return; }
+                const randomId = ids[Math.floor(Math.random() * ids.length)];
+                window.location.href = 'article.html?id=' + randomId;
+            });
+        });
+
+        addArticleMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (!currentUser) {
+                alert('Пожалуйста, войдите в систему');
+                window.location.href = 'login.html';
+                return;
+            }
+            window.location.href = 'add.html';
+        });
+
+        telegramLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://t.me/your_channel', '_blank');
+            closeMenu();
+        });
+
+        function initPage() {
+            const params = new URLSearchParams(window.location.search);
+            const articleId = params.get('id');
+            if (articleId) {
+                isEditMode = true;
+                editArticleId = articleId;
+                loadArticleForEdit(articleId);
+            } else {
+                isEditMode = false;
+                editArticleId = null;
+                renderForm(null);
+            }
+        }
+
+        function loadArticleForEdit(articleId) {
+            if (!currentUser) {
+                container.innerHTML = `
+                    <div class="auth-warning">
+                        <h2>Требуется авторизация</h2>
+                        <p>Пожалуйста, <a href="login.html">войдите</a> для редактирования.</p>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = '<div class="loading-text">Загрузка статьи...</div>';
+            db.collection('articles').doc(articleId).get().then(doc => {
+                if (!doc.exists) {
+                    container.innerHTML = '<div class="auth-warning"><h2>Статья не найдена</h2></div>';
+                    return;
+                }
+                const data = doc.data();
+                if (data.authorId !== currentUser.uid && currentUserRole !== 'admin') {
+                    container.innerHTML = `
+                        <div class="auth-warning">
+                            <h2>Нет прав на редактирование</h2>
+                            <a href="article.html?id=${articleId}" style="color:#36c;">Вернуться к статье</a>
+                        </div>
+                    `;
+                    return;
+                }
+                renderForm(data);
+            }).catch(err => {
+                container.innerHTML = '<div class="auth-warning"><h2>Ошибка загрузки</h2></div>';
+            });
+        }
+
+        function renderForm(existingData) {
+            const title = existingData?.title || '';
+            const content = existingData?.content || '';
+            const afterContent = existingData?.afterContent || '';
+            const infobox = existingData?.infobox || { title: 'Инфобокс', fields: {}, image: '' };
+            const sections = existingData?.sections || [];
+
+            container.innerHTML = `
+                <h1 class="form-title">${isEditMode ? 'Редактирование статьи' : 'Создание новой статьи'}</h1>
+                <div class="form-status" id="formStatus"></div>
+
+                <form id="articleForm">
+                    <!-- 1. НАЗВАНИЕ -->
+                    <div class="form-group">
+                        <label>Название статьи <span class="required">*</span></label>
+                        <input type="text" id="articleTitle" value="${escapeHtml(title)}" placeholder="Введите название статьи" required>
+                    </div>
+
+                    <!-- 2. ТЕКСТ СТАТЬИ С ТУЛБАРОМ -->
+                    <div class="form-group">
+                        <label>Текст статьи <span class="required">*</span></label>
+                        <div class="editor-toolbar">
+                            <button type="button" data-tag="bold"><b>B</b></button>
+                            <button type="button" data-tag="italic"><i>I</i></button>
+                            <button type="button" data-tag="underline"><u>U</u></button>
+                            <div class="separator"></div>
+                            <div class="color-picker-wrap">
+                                <span>Цвет:</span>
+                                <input type="color" id="colorPicker" value="#ff0000">
+                                <button type="button" id="applyColorBtn">Применить</button>
+                            </div>
+                            <div class="separator"></div>
+                            <button type="button" data-tag="link">🔗 Ссылка</button>
+                            <button type="button" data-tag="ref">[1]</button>
+                            <button type="button" data-tag="section">=== Заголовок ===</button>
+                        </div>
+                        <textarea id="articleContent" class="editor-textarea" placeholder="Введите текст статьи...">${escapeHtml(content)}</textarea>
+                        <div class="hint">
+                            <strong>Форматирование:</strong><br>
+                            <code>**жирный**</code> — жирный шрифт &nbsp;|&nbsp;
+                            <code>[color=red]текст[/color]</code> — цветной текст &nbsp;|&nbsp;
+                            <code>[текст](url)</code> — ссылка &nbsp;|&nbsp;
+                            <code>[1]</code> — сноска &nbsp;|&nbsp;
+                            <code>===Заголовок===</code> — раздел
+                        </div>
+                    </div>
+
+                    <!-- 3. ИНФОБОКС -->
+                    <div class="infobox-builder">
+                        <div class="infobox-title-section">📋 Инфобокс (справочная таблица)</div>
+                        <div class="infobox-sub">
+                            <div class="form-group">
+                                <label>Заголовок инфобокса</label>
+                                <input type="text" id="infoboxTitle" value="${escapeHtml(infobox.title || 'Инфобокс')}" placeholder="Название">
+                            </div>
+                            <div class="form-group">
+                                <label>Изображение</label>
+                                <div class="infobox-image-input">
+                                    <input type="text" id="infoboxImage" value="${escapeHtml(infobox.image || '')}" placeholder="URL или загрузите">
+                                    <button type="button" class="upload-btn" id="uploadImageBtn">Загрузить</button>
+                                </div>
+                                <div class="upload-progress" id="uploadProgress">Загрузка...</div>
+                                <input type="file" id="imageFileInput" accept="image/*" style="display:none;">
+                            </div>
+                        </div>
+                        <div id="infoboxFields">
+                            ${Object.entries(infobox.fields || {}).map(([key, value]) => `
+                                <div class="infobox-field">
+                                    <input type="text" class="infobox-key" value="${escapeHtml(key)}" placeholder="Название поля">
+                                    <input type="text" class="infobox-value" value="${escapeHtml(value)}" placeholder="Значение">
+                                    <button type="button" class="remove-field">✕</button>
+                                </div>
+                            `).join('')}
+                            <div class="infobox-field" id="infoboxTemplate" style="display:none;">
+                                <input type="text" class="infobox-key" placeholder="Название поля">
+                                <input type="text" class="infobox-value" placeholder="Значение">
+                                <button type="button" class="remove-field">✕</button>
+                            </div>
+                        </div>
+                        <div class="infobox-actions">
+                            <button type="button" id="addInfoboxField">➕ Добавить поле</button>
+                            <button type="button" id="clearInfobox">🗑 Очистить</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. ТЕКСТ ПОСЛЕ СТАТЬИ -->
+                    <div class="form-group">
+                        <label>Текст после статьи <span style="font-weight:400;color:#72777d;">(необязательно)</span></label>
+                        <textarea id="afterContent" placeholder="Дополнительный текст после статьи..." rows="3">${escapeHtml(afterContent)}</textarea>
+                    </div>
+
+                    <!-- 5. ЗАКЛАДКИ (СЕКЦИИ) -->
+                    <div class="sections-builder">
+                        <div class="sections-title">📑 Закладки / Разделы <span class="section-count-badge">(макс. 10)</span></div>
+                        <div class="sections-hint">Добавляйте информационные блоки, которые можно сворачивать</div>
+                        <div id="sectionsContainer">
+                            ${sections.map((s, i) => `
+                                <div class="section-item" data-index="${i}">
+                                    <div class="section-header">
+                                        <input type="text" class="section-title-input" value="${escapeHtml(s.title || 'Раздел ' + (i+1))}" placeholder="Название раздела">
+                                        <button type="button" class="remove-section">✕</button>
+                                    </div>
+                                    <textarea class="section-content-input" placeholder="Содержание раздела...">${escapeHtml(s.content || '')}</textarea>
+                                    <div class="section-collapse">
+                                        <input type="checkbox" class="section-collapsed" ${s.collapsed ? 'checked' : ''}>
+                                        <label>Свернут по умолчанию</label>
+                                    </div>
+                                </div>
+                            `).join('')}
+                            <div class="section-item" id="sectionTemplate" style="display:none;">
+                                <div class="section-header">
+                                    <input type="text" class="section-title-input" placeholder="Название раздела">
+                                    <button type="button" class="remove-section">✕</button>
+                                </div>
+                                <textarea class="section-content-input" placeholder="Содержание раздела..."></textarea>
+                                <div class="section-collapse">
+                                    <input type="checkbox" class="section-collapsed">
+                                    <label>Свернут по умолчанию</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sections-actions">
+                            <button type="button" id="addSectionBtn">➕ Добавить закладку</button>
+                            <button type="button" id="clearSectionsBtn">🗑 Удалить все</button>
+                        </div>
+                    </div>
+
+                    <!-- ПРЕДПРОСМОТР -->
+                    <div class="preview-section">
+                        <div class="preview-title">👁 Предпросмотр</div>
+                        <div class="preview-content" id="previewContent"></div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">${isEditMode ? 'Сохранить изменения' : 'Опубликовать статью'}</button>
+                        <button type="button" class="btn-secondary" id="cancelBtn">Отмена</button>
+                        ${isEditMode ? `<button type="button" class="btn-danger" id="deleteBtn">Удалить статью</button>` : ''}
+                    </div>
+                </form>
+            `;
+
+            // === TOOLBAR ===
+            const contentArea = document.getElementById('articleContent');
+            
+            document.querySelectorAll('.editor-toolbar button[data-tag]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tag = btn.dataset.tag;
+                    const start = contentArea.selectionStart;
+                    const end = contentArea.selectionEnd;
+                    const selected = contentArea.value.substring(start, end);
+                    let replacement = '';
+                    
+                    if (tag === 'bold') replacement = `**${selected || 'жирный текст'}**`;
+                    else if (tag === 'italic') replacement = `*${selected || 'курсив'}*`;
+                    else if (tag === 'underline') replacement = `__${selected || 'подчеркнутый'}__`;
+                    else if (tag === 'link') {
+                        const url = prompt('Введите URL:');
+                        if (url) replacement = `[${selected || 'текст'}](${url})`;
+                    } else if (tag === 'ref') replacement = `[${selected || '1'}]`;
+                    else if (tag === 'section') replacement = `===${selected || 'Заголовок раздела'}===`;
+                    
+                    if (replacement) {
+                        contentArea.value = contentArea.value.substring(0, start) + replacement + contentArea.value.substring(end);
+                        contentArea.focus();
+                        updatePreview();
+                    }
+                });
+            });
+
+            document.getElementById('applyColorBtn').addEventListener('click', () => {
+                const color = document.getElementById('colorPicker').value;
+                const start = contentArea.selectionStart;
+                const end = contentArea.selectionEnd;
+                const selected = contentArea.value.substring(start, end);
+                if (start === end) {
+                    contentArea.value = contentArea.value.substring(0, start) + `[color=${color}]цветной текст[/color]` + contentArea.value.substring(end);
+                } else {
+                    contentArea.value = contentArea.value.substring(0, start) + `[color=${color}]${selected}[/color]` + contentArea.value.substring(end);
+                }
+                contentArea.focus();
+                updatePreview();
+            });
+
+            // === INFOBOX ===
+            document.getElementById('addInfoboxField').addEventListener('click', () => {
+                const container = document.getElementById('infoboxFields');
+                const template = document.getElementById('infoboxTemplate');
+                const clone = template.cloneNode(true);
+                clone.style.display = 'flex';
+                clone.id = '';
+                clone.querySelectorAll('input').forEach(inp => inp.value = '');
+                container.appendChild(clone);
+                attachRemoveHandler(clone);
+            });
+
+            document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => attachRemoveHandler(el));
+            document.getElementById('clearInfobox').addEventListener('click', () => {
+                document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => el.remove());
+            });
+
+            function attachRemoveHandler(el) {
+                const btn = el.querySelector('.remove-field');
+                if (btn) btn.addEventListener('click', () => el.remove());
+            }
+
+            // === IMAGE UPLOAD ===
+            const uploadBtn = document.getElementById('uploadImageBtn');
+            const fileInput = document.getElementById('imageFileInput');
+            const imageInput = document.getElementById('infoboxImage');
+            const uploadProgress = document.getElementById('uploadProgress');
+
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                uploadProgress.classList.add('active');
+                uploadProgress.textContent = 'Загрузка...';
+                uploadBtn.disabled = true;
+                try {
+                    const url = await uploadToImgur(file);
+                    imageInput.value = url;
+                    uploadProgress.textContent = '✅ Загружено!';
+                    setTimeout(() => uploadProgress.classList.remove('active'), 3000);
+                    updatePreview();
+                } catch (err) {
+                    uploadProgress.textContent = '❌ Ошибка: ' + err.message;
+                    uploadProgress.style.color = '#d33';
+                    setTimeout(() => {
+                        uploadProgress.classList.remove('active');
+                        uploadProgress.style.color = '#36c';
+                    }, 4000);
+                } finally {
+                    uploadBtn.disabled = false;
+                    fileInput.value = '';
+                }
+            });
+
+            // === SECTIONS ===
+            document.getElementById('addSectionBtn').addEventListener('click', () => {
+                const container = document.getElementById('sectionsContainer');
+                const existing = container.querySelectorAll('.section-item:not(#sectionTemplate)');
+                if (existing.length >= 10) {
+                    alert('Максимум 10 закладок');
+                    return;
+                }
+                const template = document.getElementById('sectionTemplate');
+                const clone = template.cloneNode(true);
+                clone.style.display = 'block';
+                clone.id = '';
+                clone.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                container.appendChild(clone);
+                attachSectionRemove(clone);
+                updatePreview();
+            });
+
+            document.querySelectorAll('.section-item:not(#sectionTemplate)').forEach(el => attachSectionRemove(el));
+
+            document.getElementById('clearSectionsBtn').addEventListener('click', () => {
+                document.querySelectorAll('.section-item:not(#sectionTemplate)').forEach(el => el.remove());
+                updatePreview();
+            });
+
+            function attachSectionRemove(el) {
+                const btn = el.querySelector('.remove-section');
+                if (btn) btn.addEventListener('click', () => { el.remove(); updatePreview(); });
+                el.querySelectorAll('input, textarea').forEach(inp => inp.addEventListener('input', updatePreview));
+                el.querySelector('.section-collapsed')?.addEventListener('change', updatePreview);
+            }
+
+            // === PREVIEW ===
+            const titleInput = document.getElementById('articleTitle');
+            const contentInput = document.getElementById('articleContent');
+            const afterInput = document.getElementById('afterContent');
+            const preview = document.getElementById('previewContent');
+
+            function updatePreview() {
+                let text = contentInput.value || '';
+                let previewHtml = escapeHtml(text);
+                
+                // Bold
+                previewHtml = previewHtml.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                // Italic
+                previewHtml = previewHtml.replace(/\*(.*?)\*/g, '<i>$1</i>');
+                // Underline
+                previewHtml = previewHtml.replace(/__(.*?)__/g, '<u>$1</u>');
+                // Color
+                previewHtml = previewHtml.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
+                // Links
+                previewHtml = previewHtml.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+                // References
+                previewHtml = previewHtml.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
+                // Sections
+                previewHtml = previewHtml.replace(/===([^=]+)===/g, '<div class="preview-section-block"><div class="preview-section-title">$1</div>');
+                previewHtml = previewHtml.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+
+                // Infobox preview
+                const infoboxTitle = document.getElementById('infoboxTitle').value.trim() || 'Инфобокс';
+                const infoboxImage = document.getElementById('infoboxImage').value.trim();
+                let fieldsHtml = '';
+                document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => {
+                    const key = el.querySelector('.infobox-key')?.value || '';
+                    const value = el.querySelector('.infobox-value')?.value || '';
+                    if (key) fieldsHtml += `<div class="preview-infobox-row"><span class="key">${escapeHtml(key)}</span><span>${escapeHtml(value)}</span></div>`;
+                });
+
+                let infoboxPreview = '';
+                if (fieldsHtml || infoboxImage) {
+                    infoboxPreview = `
+                        <div class="preview-infobox">
+                            <div class="preview-infobox-title">${escapeHtml(infoboxTitle)}</div>
+                            ${infoboxImage ? `<img src="${escapeHtml(infoboxImage)}" class="preview-infobox-img" alt="Изображение">` : ''}
+                            ${fieldsHtml}
+                        </div>
+                    `;
+                }
+
+                // Sections preview
+                let sectionsHtml = '';
+                document.querySelectorAll('.section-item:not(#sectionTemplate)').forEach(el => {
+                    const title = el.querySelector('.section-title-input')?.value || 'Раздел';
+                    const content = el.querySelector('.section-content-input')?.value || '';
+                    const collapsed = el.querySelector('.section-collapsed')?.checked || false;
+                    if (title || content) {
+                        sectionsHtml += `
+                            <div class="preview-section-block ${collapsed ? 'collapsed' : ''}">
+                                <div class="preview-section-title">${escapeHtml(title)}</div>
+                                <p>${escapeHtml(content)}</p>
+                            </div>
+                        `;
+                    }
+                });
+
+                // After content
+                const afterText = afterInput.value || '';
+                let afterHtml = afterText ? `<p>${escapeHtml(afterText)}</p>` : '';
+
+                preview.innerHTML = infoboxPreview + previewHtml + sectionsHtml + afterHtml || '<span style="color:#72777d;">Предпросмотр будет здесь...</span>';
+            }
+
+            // Listen to all inputs
+            titleInput.addEventListener('input', updatePreview);
+            contentInput.addEventListener('input', updatePreview);
+            afterInput.addEventListener('input', updatePreview);
+            document.querySelectorAll('#infoboxFields input').forEach(inp => inp.addEventListener('input', updatePreview));
+            document.getElementById('infoboxTitle').addEventListener('input', updatePreview);
+            document.getElementById('infoboxImage').addEventListener('input', updatePreview);
+
+            setTimeout(updatePreview, 200);
+
+            // === SUBMIT ===
+            document.getElementById('articleForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                saveArticle();
+            });
+
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                if (isEditMode && editArticleId) window.location.href = 'article.html?id=' + editArticleId;
+                else window.location.href = 'index.html';
+            });
+
+            if (isEditMode) {
+                document.getElementById('deleteBtn')?.addEventListener('click', () => {
+                    if (confirm('Удалить статью?')) deleteArticle();
+                });
+            }
+        }
+
+        function saveArticle() {
+            const status = document.getElementById('formStatus');
+            status.className = 'form-status';
+            status.style.display = 'none';
+
+            if (!currentUser) {
+                showStatus('Войдите в систему', 'error');
+                return;
+            }
+
+            const title = document.getElementById('articleTitle').value.trim();
+            const content = document.getElementById('articleContent').value.trim();
+
+            if (!title) { showStatus('Введите название', 'error'); return; }
+            if (!content) { showStatus('Введите содержание', 'error'); return; }
+
+            const infoboxTitle = document.getElementById('infoboxTitle').value.trim() || 'Инфобокс';
+            const infoboxImage = document.getElementById('infoboxImage').value.trim();
+            const fields = {};
+            document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => {
+                const key = el.querySelector('.infobox-key')?.value || '';
+                const value = el.querySelector('.infobox-value')?.value || '';
+                if (key) fields[key] = value;
+            });
+
+            const afterContent = document.getElementById('afterContent').value.trim();
+
+            const sections = [];
+            document.querySelectorAll('.section-item:not(#sectionTemplate)').forEach(el => {
+                const title = el.querySelector('.section-title-input')?.value || '';
+                const content = el.querySelector('.section-content-input')?.value || '';
+                const collapsed = el.querySelector('.section-collapsed')?.checked || false;
+                if (title || content) sections.push({ title, content, collapsed });
+            });
+
+            const articleData = {
+                title,
+                content,
+                afterContent,
+                infobox: { title: infoboxTitle, fields, image: infoboxImage },
+                sections,
+                updatedAt: Date.now()
+            };
+
+            if (isEditMode && editArticleId) {
+                articleData.authorId = currentUser.uid;
+                db.collection('articles').doc(editArticleId).update(articleData)
+                    .then(() => {
+                        db.collection('logs').add({ action: 'edit', articleId: editArticleId, title, userId: currentUser.uid, timestamp: Date.now() });
+                        showStatus('Статья обновлена!', 'success');
+                        setTimeout(() => window.location.href = 'article.html?id=' + editArticleId, 1200);
+                    })
+                    .catch(err => showStatus('Ошибка: ' + err.message, 'error'));
+            } else {
+                articleData.authorId = currentUser.uid;
+                articleData.createdAt = Date.now();
+                const newRef = db.collection('articles').doc();
+                articleData.articleId = newRef.id;
+                newRef.set(articleData)
+                    .then(() => {
+                        db.collection('logs').add({ action: 'create', articleId: newRef.id, title, userId: currentUser.uid, timestamp: Date.now() });
+                        showStatus('Статья создана!', 'success');
+                        setTimeout(() => window.location.href = 'article.html?id=' + newRef.id, 1200);
+                    })
+                    .catch(err => showStatus('Ошибка: ' + err.message, 'error'));
+            }
+        }
+
+        function showStatus(msg, type) {
+            const status = document.getElementById('formStatus');
+            status.textContent = msg;
+            status.className = 'form-status ' + type;
+            status.style.display = 'block';
+        }
+
+        function deleteArticle() {
+            if (!currentUser || currentUserRole !== 'admin') {
+                alert('Только админы могут удалять');
+                return;
+            }
+            if (!editArticleId) return;
+            db.collection('articles').doc(editArticleId).get().then(doc => {
+                if (!doc.exists) return;
+                const data = doc.data();
+                return db.collection('deletedArticles').doc(editArticleId).set({
+                    title: data.title, content: data.content, infobox: data.infobox || null,
+                    deletedAt: Date.now(), deletedBy: currentUser.uid, originalAuthor: data.authorId || 'unknown'
+                }).then(() => db.collection('articles').doc(editArticleId).delete())
+                .then(() => {
+                    db.collection('logs').add({ action: 'delete', articleId: editArticleId, title: data.title, userId: currentUser.uid, timestamp: Date.now() });
+                    alert('Статья удалена');
+                    window.location.href = 'index.html';
+                });
+            }).catch(err => alert('Ошибка: ' + err.message));
+        }
+
+        if (!auth.currentUser) {
+            container.innerHTML = `
+                <div class="auth-warning">
+                    <h2>Требуется авторизация</h2>
+                    <p><a href="login.html">Войдите</a> для создания статьи</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

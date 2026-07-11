@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Профиль — Викивнезакона</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f8f9fa;
+            color: #202122;
+            padding-bottom: 40px;
+        }
+
+        .wiki-header {
+            background: #ffffff;
+            border-bottom: 1px solid #eaecf0;
+            padding: 8px 12px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .left-side {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-btn img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .wiki-logo-text {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 20px;
+            font-weight: 400;
+            color: #000;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .right-side {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .right-side a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .right-side img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .burger-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .burger-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .burger-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background: #ffffff;
+            z-index: 3000;
+            transition: left 0.3s ease;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            padding: 16px 0;
+        }
+
+        .burger-menu.open {
+            left: 0;
+        }
+
+        .burger-menu .menu-header {
+            padding: 0 16px 16px 16px;
+            border-bottom: 1px solid #eaecf0;
+            margin-bottom: 12px;
+        }
+
+        .burger-menu .menu-header .logo-text {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 22px;
+            color: #000;
+        }
+
+        .burger-menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #202122;
+            text-decoration: none;
+            font-size: 15px;
+            border-bottom: 1px solid #f8f9fa;
+            transition: background 0.15s;
+            cursor: pointer;
+            background: none;
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .burger-menu .menu-item:hover {
+            background: #eaecf0;
+        }
+
+        .burger-menu .menu-item img {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .burger-menu .menu-divider {
+            height: 1px;
+            background: #eaecf0;
+            margin: 8px 16px;
+        }
+
+        .burger-menu .menu-footer {
+            padding: 16px;
+            font-size: 13px;
+            color: #72777d;
+            border-top: 1px solid #eaecf0;
+            margin-top: 12px;
+        }
+
+        .burger-menu .menu-footer a {
+            color: #36c;
+            text-decoration: none;
+        }
+
+        .burger-close {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #72777d;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .profile-card {
+            background: #fff;
+            border: 1px solid #eaecf0;
+            border-radius: 2px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #36c;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 500;
+            margin: 0 auto 16px;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .profile-email {
+            color: #72777d;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .profile-role {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .profile-role.admin {
+            background: #fde7e7;
+            color: #d33;
+        }
+
+        .profile-role.user {
+            background: #e7f5e7;
+            color: #2a8;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .profile-stats .stat-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 2px;
+        }
+
+        .profile-stats .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            color: #202122;
+        }
+
+        .profile-stats .stat-label {
+            font-size: 13px;
+            color: #72777d;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .profile-actions .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 2px;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+        .profile-actions .btn-primary {
+            background: #36c;
+            color: #fff;
+        }
+
+        .profile-actions .btn-primary:hover {
+            background: #2a4b8d;
+        }
+
+        .profile-actions .btn-danger {
+            background: #d33;
+            color: #fff;
+        }
+
+        .profile-actions .btn-danger:hover {
+            background: #b22222;
+        }
+
+        .profile-actions .btn-secondary {
+            background: #f8f9fa;
+            color: #202122;
+            border: 1px solid #a2a9b1;
+        }
+
+        .profile-actions .btn-secondary:hover {
+            background: #eaecf0;
+        }
+
+        .auth-warning {
+            text-align: center;
+            padding: 40px 20px;
+            color: #72777d;
+        }
+
+        .auth-warning a {
+            color: #36c;
+            text-decoration: none;
+        }
+
+        .auth-warning a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-status {
+            font-size: 13px;
+            color: #72777d;
+            padding: 4px 16px 12px 16px;
+        }
+
+        .auth-status .user-email {
+            color: #202122;
+            font-weight: 500;
+        }
+
+        .auth-status .logout-btn {
+            background: none;
+            border: none;
+            color: #d33;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0;
+            text-decoration: underline;
+            font-family: inherit;
+        }
+
+        .loading-text {
+            text-align: center;
+            padding: 40px 0;
+            color: #72777d;
+            font-size: 15px;
+        }
+
+        .viewing-other {
+            color: #72777d;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            .profile-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+            .profile-name {
+                font-size: 20px;
+            }
+            .wiki-logo-text {
+                font-size: 17px;
+            }
+            .burger-menu {
+                width: 280px;
+                left: -280px;
+            }
+            .profile-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .wiki-logo-text {
+                font-size: 24px;
+            }
+            .container {
+                padding: 24px;
+            }
+            .profile-card {
+                padding: 32px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="wiki-header">
+        <div class="header-content">
+            <div class="left-side">
+                <button class="menu-btn" id="menuToggle" aria-label="Меню">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg" alt="Меню">
+                </button>
+                <a href="index.html" class="wiki-logo-text">Викивнезакона</a>
+            </div>
+            <div class="right-side">
+                <a href="search.html">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg" alt="Поиск">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="burger-overlay" id="burgerOverlay"></div>
+    <nav class="burger-menu" id="burgerMenu">
+        <button class="burger-close" id="burgerClose">✕</button>
+        <div class="menu-header">
+            <span class="logo-text">Викивнезакона</span>
+        </div>
+        <a href="index.html" class="menu-item">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная
+        </a>
+        <button class="menu-item" id="randomArticleBtn">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg" alt="Случайная"> Случайная
+        </button>
+        <div class="menu-divider"></div>
+        <button class="menu-item" id="addArticleMenuBtn">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Создать"> Создать статью
+        </button>
+        <div class="menu-divider"></div>
+        <div class="auth-status" id="authStatus">
+            <span id="authStatusText">Загрузка...</span>
+        </div>
+        <button class="menu-item" id="loginMenuBtn">
+            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg" alt="Профиль" style="filter: invert(0.3);">
+            <span id="loginMenuText">Войти</span>
+        </button>
+        <div class="menu-divider"></div>
+        <a href="#" class="menu-item" id="telegramLink">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202122" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+            </svg>
+            Подписаться на ТГК
+        </a>
+        <div class="menu-footer">
+            <a href="#">Описание</a> • <a href="#">Отказ от ответственности</a><br>
+            <span style="font-size: 11px;">© Викивнезакона</span>
+        </div>
+    </nav>
+
+    <main class="container" id="profileContainer">
+        <div class="loading-text">Загрузка профиля...</div>
+    </main>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyArcDmBhon_3xLtksvF-9M54HP8bHj9hII",
+            authDomain: "sosial2-440f4.firebaseapp.com",
+            databaseURL: "https://sosial2-440f4-default-rtdb.firebaseio.com",
+            projectId: "sosial2-440f4",
+            storageBucket: "sosial2-440f4.firebasestorage.app",
+            messagingSenderId: "365488411767",
+            appId: "1:365488411767:web:55f9e4b2db543c2c8aa272",
+            measurementId: "G-0X53TXRXW9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const container = document.getElementById('profileContainer');
+        const menuToggle = document.getElementById('menuToggle');
+        const burgerMenu = document.getElementById('burgerMenu');
+        const burgerOverlay = document.getElementById('burgerOverlay');
+        const burgerClose = document.getElementById('burgerClose');
+        const authStatusText = document.getElementById('authStatusText');
+        const loginMenuText = document.getElementById('loginMenuText');
+        const loginMenuBtn = document.getElementById('loginMenuBtn');
+        const randomArticleBtn = document.getElementById('randomArticleBtn');
+        const addArticleMenuBtn = document.getElementById('addArticleMenuBtn');
+        const telegramLink = document.getElementById('telegramLink');
+
+        function openMenu() {
+            burgerMenu.classList.add('open');
+            burgerOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            burgerMenu.classList.remove('open');
+            burgerOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        menuToggle.addEventListener('click', openMenu);
+        burgerClose.addEventListener('click', closeMenu);
+        burgerOverlay.addEventListener('click', closeMenu);
+
+        let currentUser = null;
+        let currentUserRole = 'user';
+        let currentUsername = '';
+        let viewedUserId = null;
+
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            if (user) {
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        currentUserRole = doc.data().role || 'user';
+                        currentUsername = doc.data().username || user.email.split('@')[0] || 'Пользователь';
+                    } else {
+                        currentUserRole = 'user';
+                        currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    }
+                    updateAuthUI();
+                    renderProfile();
+                }).catch(() => {
+                    currentUserRole = 'user';
+                    currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    updateAuthUI();
+                    renderProfile();
+                });
+            } else {
+                currentUserRole = 'user';
+                currentUsername = '';
+                updateAuthUI();
+                renderProfile();
+            }
+        });
+
+        function updateAuthUI() {
+            if (currentUser) {
+                authStatusText.innerHTML = `<span class="user-email">${escapeHtml(currentUsername)}</span> (${currentUserRole === 'admin' ? 'админ' : 'пользователь'})<br>
+                    <button class="logout-btn" id="logoutBtn">Выйти</button>`;
+                loginMenuText.textContent = escapeHtml(currentUsername);
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        auth.signOut();
+                        closeMenu();
+                        window.location.href = 'index.html';
+                    });
+                }
+            } else {
+                authStatusText.textContent = 'Вы не авторизованы';
+                loginMenuText.textContent = 'Войти';
+            }
+        }
+
+        loginMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (currentUser) {
+                window.location.href = 'profile.html?uid=' + currentUser.uid;
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function renderProfile() {
+            const params = new URLSearchParams(window.location.search);
+            const uid = params.get('uid');
+
+            if (!currentUser) {
+                container.innerHTML = `
+                    <div class="auth-warning">
+                        <h2>Требуется авторизация</h2>
+                        <p>Пожалуйста, <a href="login.html">войдите</a> для просмотра профиля.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Determine which profile to show
+            const targetUid = uid || currentUser.uid;
+            viewedUserId = targetUid;
+            const isOwnProfile = targetUid === currentUser.uid;
+
+            try {
+                const doc = await db.collection('users').doc(targetUid).get();
+                if (!doc.exists) {
+                    container.innerHTML = '<div class="auth-warning"><h2>Пользователь не найден</h2></div>';
+                    return;
+                }
+
+                const userData = doc.data();
+                const username = userData.username || 'Пользователь';
+                const email = userData.email || 'Email не указан';
+                const role = userData.role || 'user';
+
+                // Get article count
+                let articleCount = 0;
+                try {
+                    const snap = await db.collection('articles')
+                        .where('authorId', '==', targetUid)
+                        .get();
+                    articleCount = snap.size;
+                } catch (err) {
+                    console.error(err);
+                }
+
+                const initial = username.charAt(0).toUpperCase();
+                const roleLabel = role === 'admin' ? 'Администратор' : 'Пользователь';
+                const roleClass = role === 'admin' ? 'admin' : 'user';
+
+                let actionsHtml = '';
+                if (isOwnProfile) {
+                    actionsHtml = `
+                        <div class="profile-actions">
+                            <a href="add.html" class="btn btn-primary">Создать статью</a>
+                            <button class="btn btn-danger" id="logoutProfileBtn">Выйти</button>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <div class="profile-card">
+                        ${!isOwnProfile ? `<div class="viewing-other">Просмотр профиля пользователя</div>` : ''}
+                        <div class="profile-avatar">${escapeHtml(initial)}</div>
+                        <div class="profile-name">${escapeHtml(username)}</div>
+                        <div class="profile-email">${escapeHtml(email)}</div>
+                        <div class="profile-role ${roleClass}">${roleLabel}</div>
+
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">${articleCount}</div>
+                                <div class="stat-label">Статей создано</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">${role === 'admin' ? 'Админ' : 'Редактор'}</div>
+                                <div class="stat-label">Статус</div>
+                            </div>
+                        </div>
+
+                        ${actionsHtml}
+                    </div>
+                `;
+
+                if (isOwnProfile) {
+                    const logoutBtn = document.getElementById('logoutProfileBtn');
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener('click', () => {
+                            auth.signOut();
+                            window.location.href = 'index.html';
+                        });
+                    }
+                }
+            } catch (err) {
+                container.innerHTML = '<div class="auth-warning"><h2>Ошибка загрузки профиля</h2></div>';
+                console.error(err);
+            }
+        }
+
+        randomArticleBtn.addEventListener('click', () => {
+            closeMenu();
+            db.collection('articles').get().then(snapshot => {
+                const ids = [];
+                snapshot.forEach(doc => ids.push(doc.id));
+                if (ids.length === 0) {
+                    alert('Статей пока нет');
+                    return;
+                }
+                const randomId = ids[Math.floor(Math.random() * ids.length)];
+                window.location.href = 'article.html?id=' + randomId;
+            });
+        });
+
+        addArticleMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (!currentUser) {
+                alert('Пожалуйста, войдите в систему для создания статьи');
+                window.location.href = 'login.html';
+                return;
+            }
+            window.location.href = 'add.html';
+        });
+
+        telegramLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://t.me/your_channel', '_blank');
+            closeMenu();
+        });
+    </script>
+</body>
+</html>
