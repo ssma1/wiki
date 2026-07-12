@@ -175,40 +175,11 @@
             padding: 16px 20px;
             margin-top: 20px;
         }
-        .help-section .help-title {
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: #202122;
-        }
-        .help-section .help-item {
-            font-size: 14px;
-            color: #202122;
-            margin-bottom: 6px;
-            line-height: 1.6;
-        }
-        .help-section .help-item code {
-            background: #eaeef2;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 13px;
-            font-family: monospace;
-        }
-        .help-section .help-item .example {
-            background: #eaeef2;
-            padding: 4px 10px;
-            border-radius: 3px;
-            display: inline-block;
-            margin-top: 2px;
-            font-family: monospace;
-            font-size: 13px;
-        }
-        .help-section .help-note {
-            font-size: 13px;
-            color: #72777d;
-            margin-top: 8px;
-            font-style: italic;
-        }
+        .help-section .help-title { font-weight: 600; font-size: 16px; margin-bottom: 10px; color: #202122; }
+        .help-section .help-item { font-size: 14px; color: #202122; margin-bottom: 6px; line-height: 1.6; }
+        .help-section .help-item code { background: #eaeef2; padding: 2px 8px; border-radius: 3px; font-size: 13px; font-family: monospace; }
+        .help-section .help-item .example { background: #eaeef2; padding: 4px 10px; border-radius: 3px; display: inline-block; margin-top: 2px; font-family: monospace; font-size: 13px; }
+        .help-section .help-note { font-size: 13px; color: #72777d; margin-top: 8px; font-style: italic; }
 
         .form-actions { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 8px; }
         .form-actions .btn-primary { padding: 10px 28px; background: #36c; color: #fff; border: none; border-radius: 2px; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.15s; font-family: inherit; }
@@ -321,6 +292,7 @@
         burgerOverlay.addEventListener('click', closeMenu);
 
         let currentUser = null, currentUserRole = 'user', currentUsername = '', isEditMode = false, editArticleId = null;
+        let existingArticleData = null; // Храним исходные данные статьи
 
         auth.onAuthStateChanged(user => {
             currentUser = user;
@@ -387,15 +359,30 @@
             }
         }
         
+        // =====================================================
+        // 🔥 ЗАГРУЗКА СТАТЬИ ДЛЯ РЕДАКТИРОВАНИЯ (ИСПРАВЛЕНО)
+        // =====================================================
         function loadArticleForEdit(articleId) {
-            if (!currentUser) { container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p>Пожалуйста, <a href="/login">войдите</a> для редактирования.</p></div>`; return; }
+            if (!currentUser) { 
+                container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p>Пожалуйста, <a href="/login">войдите</a> для редактирования.</p></div>`; 
+                return; 
+            }
             container.innerHTML = '<div class="loading-text">Загрузка статьи...</div>';
             db.collection('articles').doc(articleId).get().then(doc => {
-                if (!doc.exists) { container.innerHTML = '<div class="auth-warning"><h2>Статья не найдена</h2></div>'; return; }
+                if (!doc.exists) { 
+                    container.innerHTML = '<div class="auth-warning"><h2>Статья не найдена</h2></div>'; 
+                    return; 
+                }
                 const data = doc.data();
-                if (data.authorId !== currentUser.uid && currentUserRole !== 'admin') { container.innerHTML = `<div class="auth-warning"><h2>Нет прав на редактирование</h2><a href="/article?id=${articleId}" style="color:#36c;">Вернуться к статье</a></div>`; return; }
-                renderForm(data);
-            }).catch(err => { container.innerHTML = '<div class="auth-warning"><h2>Ошибка загрузки</h2></div>'; });
+                
+                // 🔥 УБРАЛ ПРОВЕРКУ ПРАВ — ЛЮБОЙ ЗАЛОГИНЕННЫЙ МОЖЕТ РЕДАКТИРОВАТЬ!
+                // Но автор и админ могут менять название, остальные — только контент
+                existingArticleData = data;
+                renderForm(data, null);
+            }).catch(err => { 
+                container.innerHTML = `<div class="auth-warning"><h2>Ошибка загрузки</h2><p>${escapeHtml(err.message)}</p></div>`; 
+                console.error(err);
+            });
         }
 
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
@@ -411,7 +398,11 @@
                 <h1 class="form-title">${isEditMode ? 'Редактирование статьи' : 'Создание новой статьи'}</h1>
                 <div class="form-status" id="formStatus"></div>
                 <form id="articleForm">
-                    <div class="form-group"><label>Название статьи <span class="required">*</span></label><input type="text" id="articleTitle" value="${escapeHtml(title)}" placeholder="Введите название статьи" required></div>
+                    <div class="form-group">
+                        <label>Название статьи <span class="required">*</span></label>
+                        <input type="text" id="articleTitle" value="${escapeHtml(title)}" placeholder="Введите название статьи" required>
+                        ${isEditMode && existingData ? `<span style="font-size:12px;color:#72777d;display:block;margin-top:4px;">${currentUserRole === 'admin' || existingData.authorId === currentUser.uid ? '✅ Вы можете изменить название' : '⚠️ Только автор или администратор могут менять название'}</span>` : ''}
+                    </div>
 
                     <div class="form-group">
                         <label>Текст статьи <span class="required">*</span></label>
@@ -695,25 +686,47 @@
             }).catch(err => console.error('Ошибка сохранения истории:', err));
         }
 
+        // =====================================================
+        // 🔥 СОХРАНЕНИЕ СТАТЬИ (ПОЛНОСТЬЮ ИСПРАВЛЕНО)
+        // =====================================================
         function saveArticle() {
-            const status = document.getElementById('formStatus'); status.className = 'form-status'; status.style.display = 'none';
-            if (!currentUser) { showStatus('Войдите в систему', 'error'); return; }
-            const title = document.getElementById('articleTitle').value.trim(); const content = document.getElementById('articleContent').value.trim();
-            if (!title) { showStatus('Введите название', 'error'); return; } if (!content) { showStatus('Введите содержание', 'error'); return; }
+            const status = document.getElementById('formStatus'); 
+            status.className = 'form-status'; 
+            status.style.display = 'none';
+            
+            if (!currentUser) { 
+                showStatus('❌ Войдите в систему', 'error'); 
+                return; 
+            }
+            
+            const title = document.getElementById('articleTitle').value.trim(); 
+            const content = document.getElementById('articleContent').value.trim();
+            
+            if (!title) { 
+                showStatus('❌ Введите название статьи', 'error'); 
+                return; 
+            }
+            
+            if (!content) { 
+                showStatus('❌ Введите содержание статьи', 'error'); 
+                return; 
+            }
 
             const infoboxTitle = document.getElementById('infoboxTitle').value.trim() || 'Инфобокс';
             const infoboxImage = document.getElementById('infoboxImage').value.trim();
             const infoboxBgColor = document.getElementById('infoboxBgColor').value || '#0033cc';
             const fields = {};
             document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => {
-                const key = el.querySelector('.infobox-key')?.value || ''; const value = el.querySelector('.infobox-value')?.value || '';
+                const key = el.querySelector('.infobox-key')?.value || ''; 
+                const value = el.querySelector('.infobox-value')?.value || '';
                 if (key) fields[key] = value;
             });
             const afterContent = document.getElementById('afterContent').value.trim();
 
             const branches = [];
             document.querySelectorAll('.branch-item:not(#branchTemplate)').forEach(el => {
-                const title = el.querySelector('.branch-title-input')?.value || ''; const content = el.querySelector('.branch-content-input')?.value || '';
+                const title = el.querySelector('.branch-title-input')?.value || ''; 
+                const content = el.querySelector('.branch-content-input')?.value || '';
                 if (title || content) branches.push({ title, content });
             });
 
@@ -723,29 +736,63 @@
                 branches
             };
 
+            // 🔥 РЕДАКТИРОВАНИЕ
             if (isEditMode && editArticleId) {
+                // Проверяем, может ли пользователь менять название
+                const isAuthor = existingArticleData && existingArticleData.authorId === currentUser.uid;
+                const isAdminUser = currentUserRole === 'admin';
+                const canChangeTitle = isAuthor || isAdminUser;
+                
                 const updateData = {
-                    ...articleData,
+                    content: articleData.content,
+                    afterContent: articleData.afterContent,
+                    infobox: articleData.infobox,
+                    branches: articleData.branches,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
-                if (!existingData?.authorId) {
+                
+                // Только автор или админ могут менять название
+                if (canChangeTitle) {
+                    updateData.title = articleData.title;
+                } else if (existingArticleData) {
+                    // Если не автор, сохраняем старое название
+                    updateData.title = existingArticleData.title;
+                }
+                
+                // Добавляем authorId если его нет
+                if (existingArticleData && !existingArticleData.authorId) {
                     updateData.authorId = currentUser.uid;
                 }
                 
-                db.collection('articles').doc(editArticleId).update(updateData).then(() => {
-                    return saveToHistory(editArticleId, articleData, 'edit', currentUser.uid, currentUsername);
-                }).then(() => {
-                    db.collection('logs').add({
-                        action: 'edit',
-                        articleId: editArticleId,
-                        title: title,
-                        userId: currentUser.uid,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                console.log('📝 Обновление статьи:', { 
+                    id: editArticleId, 
+                    canChangeTitle, 
+                    titleChanged: canChangeTitle ? articleData.title : 'не изменено',
+                    updateData 
+                });
+                
+                db.collection('articles').doc(editArticleId).update(updateData)
+                    .then(() => {
+                        return saveToHistory(editArticleId, articleData, 'edit', currentUser.uid, currentUsername);
+                    })
+                    .then(() => {
+                        db.collection('logs').add({
+                            action: 'edit',
+                            articleId: editArticleId,
+                            title: articleData.title,
+                            userId: currentUser.uid,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        showStatus('✅ Статья обновлена!', 'success');
+                        setTimeout(() => window.location.href = '/article?id=' + editArticleId, 1200);
+                    })
+                    .catch(err => {
+                        console.error('❌ Ошибка сохранения:', err);
+                        showStatus('❌ Ошибка: ' + err.message, 'error');
                     });
-                    showStatus('Статья обновлена!', 'success');
-                    setTimeout(() => window.location.href = '/article?id=' + editArticleId, 1200);
-                }).catch(err => showStatus('Ошибка: ' + err.message, 'error'));
-            } else {
+            } 
+            // 🔥 СОЗДАНИЕ НОВОЙ СТАТЬИ
+            else {
                 const newRef = db.collection('articles').doc();
                 const newArticleData = {
                     ...articleData,
@@ -755,29 +802,46 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                newRef.set(newArticleData).then(() => {
-                    return saveToHistory(newRef.id, articleData, 'create', currentUser.uid, currentUsername);
-                }).then(() => {
-                    db.collection('logs').add({
-                        action: 'create',
-                        articleId: newRef.id,
-                        title: title,
-                        userId: currentUser.uid,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                console.log('📝 Создание новой статьи:', { id: newRef.id, newArticleData });
+                
+                newRef.set(newArticleData)
+                    .then(() => {
+                        return saveToHistory(newRef.id, articleData, 'create', currentUser.uid, currentUsername);
+                    })
+                    .then(() => {
+                        db.collection('logs').add({
+                            action: 'create',
+                            articleId: newRef.id,
+                            title: articleData.title,
+                            userId: currentUser.uid,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        showStatus('✅ Статья создана!', 'success');
+                        setTimeout(() => window.location.href = '/article?id=' + newRef.id, 1200);
+                    })
+                    .catch(err => {
+                        console.error('❌ Ошибка создания:', err);
+                        showStatus('❌ Ошибка: ' + err.message, 'error');
                     });
-                    showStatus('Статья создана!', 'success');
-                    setTimeout(() => window.location.href = '/article?id=' + newRef.id, 1200);
-                }).catch(err => showStatus('Ошибка: ' + err.message, 'error'));
             }
         }
 
-        function showStatus(msg, type) { const status = document.getElementById('formStatus'); status.textContent = msg; status.className = 'form-status ' + type; status.style.display = 'block'; }
+        function showStatus(msg, type) { 
+            const status = document.getElementById('formStatus'); 
+            status.textContent = msg; 
+            status.className = 'form-status ' + type; 
+            status.style.display = 'block'; 
+        }
         
         function deleteArticle() {
-            if (!currentUser || currentUserRole !== 'admin') { alert('Только админы могут удалять'); return; }
+            if (!currentUser || currentUserRole !== 'admin') { 
+                alert('❌ Только администраторы могут удалять статьи'); 
+                return; 
+            }
             if (!editArticleId) return;
             db.collection('articles').doc(editArticleId).get().then(doc => {
-                if (!doc.exists) return; const data = doc.data();
+                if (!doc.exists) return; 
+                const data = doc.data();
                 return db.collection('deletedArticles').doc(editArticleId).set({
                     title: data.title, content: data.content, infobox: data.infobox || null,
                     deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -791,9 +855,10 @@
                         userId: currentUser.uid,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    alert('Статья удалена'); window.location.href = '/';
+                    alert('🗑️ Статья удалена');
+                    window.location.href = '/';
                 });
-            }).catch(err => alert('Ошибка: ' + err.message));
+            }).catch(err => alert('❌ Ошибка: ' + err.message));
         }
 
         if (!auth.currentUser) {

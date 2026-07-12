@@ -630,26 +630,26 @@
         }
 
         // =====================================================
-        // ОСНОВНАЯ ФУНКЦИЯ РЕНДЕРИНГА
+        // 🔥 ОСНОВНАЯ ФУНКЦИЯ РЕНДЕРИНГА (С ПРАВИЛЬНЫМИ ПРАВАМИ)
         // =====================================================
         function renderArticle(data) {
-            // 🔥 Обновляем мета-теги
+            // Обновляем мета-теги
             updateMetaTags(data);
 
             const isAdmin = currentUserRole === 'admin';
             const isAuthor = currentUser && data.authorId === currentUser.uid;
             
-            // 🔥 ЛЮБОЙ залогиненный пользователь может редактировать
+            // 🔥 ЛЮБОЙ залогиненный пользователь может редактировать КОНТЕНТ
             const canEdit = !!currentUser;
             
-            // 🔥 Историю видят ТОЛЬКО автор и админ
-            const canSeeHistory = isAuthor || isAdmin;
+            // 🔥 ТОЛЬКО автор или админ могут менять НАЗВАНИЕ
+            const canChangeTitle = isAuthor || isAdmin;
             
-            // 🔥 Удалять могут ТОЛЬКО автор и админ
+            // 🔥 ТОЛЬКО автор или админ могут УДАЛЯТЬ
             const canDelete = isAuthor || isAdmin;
             
-            // 🔥 Изменять название могут ТОЛЬКО автор и админ
-            const canChangeTitle = isAuthor || isAdmin;
+            // 🔥 ТОЛЬКО автор или админ видят ИСТОРИЮ
+            const canSeeHistory = isAuthor || isAdmin;
 
             let mainText = parseTags(data.content || '');
             mainText = mainText.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
@@ -705,9 +705,10 @@
 
             // 🔥 Кнопка редактирования — для ВСЕХ залогиненных пользователей
             if (canEdit) {
+                // Передаём ID статьи и флаг canChangeTitle через URL
                 toolsRightHtml += `
                     <div class="tool-item">
-                        <a href="/add?id=${data.id}" class="edit-btn" title="Редактировать">
+                        <a href="/add?id=${data.id}&canChangeTitle=${canChangeTitle ? 'true' : 'false'}" class="edit-btn" title="Редактировать">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
                         </a>
                     </div>
@@ -871,7 +872,6 @@
         // ВОССТАНОВЛЕНИЕ ВЕРСИИ (только автор или админ)
         // =====================================================
         async function restoreVersion(articleId, index) {
-            // 🔥 Проверка прав — только автор или админ могут восстанавливать
             const doc = await db.collection('articles').doc(articleId).get();
             if (!doc.exists) {
                 alert('Статья не найдена');
@@ -961,10 +961,10 @@
                         userId: currentUser.uid,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    alert('Статья удалена');
+                    alert('🗑️ Статья удалена');
                     window.location.href = '/';
                 });
-            }).catch(err => alert('Ошибка: ' + err.message));
+            }).catch(err => alert('❌ Ошибка: ' + err.message));
         }
 
         randomArticleBtn.addEventListener('click', () => {
