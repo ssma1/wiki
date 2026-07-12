@@ -205,7 +205,7 @@
             word-break: break-word;
         }
 
-        /* ===== ИНФОБОКС — ИСПРАВЛЕННЫЙ ===== */
+        /* ===== ИНФОБОКС — С ПОЛОСКАМИ И ОТСТУПАМИ ===== */
         .infobox {
             float: right;
             width: 280px;
@@ -229,8 +229,9 @@
             overflow-wrap: break-word;
             word-wrap: break-word;
             word-break: break-word;
+            border-bottom: 1px solid #a2a9b1;
         }
-        .infobox-image-container { text-align: center; padding: 8px; background: #fff; }
+        .infobox-image-container { text-align: center; padding: 8px; background: #fff; border-bottom: 1px solid #eaecf0; }
         .infobox-main-img { max-width: 100%; max-height: 200px; height: auto; }
         .infobox-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .infobox-table tr { border-bottom: 1px solid #eaecf0; }
@@ -604,7 +605,7 @@
             // Подчеркнутый
             html = html.replace(/__(.*?)__/g, '<u>$1</u>');
             
-            // ЦВЕТ — ИСПРАВЛЕНО! Рекурсивный парсинг для поддержки **жирного** и *курсива* внутри
+            // ЦВЕТ — рекурсивный парсинг для поддержки **жирного** внутри
             html = html.replace(/\[color\s*=\s*([^\]]+)\](.*?)\[\/color\]/gs, (match, color, content) => {
                 let colorHex = color.trim();
                 const colorMap = {
@@ -616,7 +617,6 @@
                 if (colorMap[color.toLowerCase()]) {
                     colorHex = colorMap[color.toLowerCase()];
                 }
-                // Рекурсивно парсим содержимое (чтобы внутри были жирный/курсив)
                 const parsedContent = parseTags(content);
                 return `<span style="color:${colorHex};">${parsedContent}</span>`;
             });
@@ -715,7 +715,7 @@
             const parsedTitle = parseTags(data.title || 'Инфобокс');
             return `
                 <table class="infobox">
-                    <tr><td colspan="2" class="infobox-header" style="background:${bgColor};border-bottom:1px solid #a2a9b1;">${parsedTitle}</td></tr>
+                    <tr><td colspan="2" class="infobox-header" style="background:${bgColor};">${parsedTitle}</td></tr>
                     ${data.image ? `<tr><td colspan="2" class="infobox-image-container">${imageHtml}</td></tr>` : ''}
                     ${rows}
                 </table>
@@ -972,7 +972,6 @@
                 </div>
             `;
 
-            // Карандаш (обычный)
             if (canEdit) {
                 toolsRightHtml += `
                     <div class="tool-item">
@@ -981,9 +980,7 @@
                         </a>
                     </div>
                 `;
-            } 
-            // Карандаш с ЗАКРЫТЫМ замком
-            else if (isProtected && currentUser) {
+            } else if (isProtected && currentUser) {
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="#" class="edit-btn protected" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
@@ -994,9 +991,7 @@
                         </a>
                     </div>
                 `;
-            } 
-            // Незарегистрированный пользователь
-            else if (!currentUser) {
+            } else if (!currentUser) {
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="/reg" class="edit-btn" title="Войдите чтобы редактировать">
