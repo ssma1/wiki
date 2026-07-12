@@ -444,7 +444,7 @@
         <div class="auth-status" id="authStatus"><span id="authStatusText">Загрузка...</span></div>
         <button class="menu-item" id="loginMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg" alt="Профиль" style="filter: invert(0.3);"><span id="loginMenuText">Войти</span></button>
         <div class="menu-divider"></div>
-        <a href="#" class="menu-item" id="telegramLink">
+        <a href="https://t.me/wikivnezakona" class="menu-item" id="telegramLink">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202122" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             Подписаться на ТГК
         </a>
@@ -468,12 +468,12 @@
     <footer class="wiki-footer">
         <div class="footer-brand">Викивнезакона</div>
         <div class="footer-links">
-            <a href="#">Политика конфиденциальности</a> •
-            <a href="#">Свяжитесь с нами</a> •
-            <a href="#">Отказ от ответственности</a>
+            <a href="PrivacyPolicy">Политика конфиденциальности</a> •
+            <a href="https://t.me/wikivnezakona?direct">Свяжитесь с нашими ебланами</a> •
+            <a href="coonie">Заявление о куни</a>
         </div>
         <div class="footer-copy">
-            Текст доступен по лицензии Creative Commons Attribution-ShareAlike
+            Текст доступен по лицензии Sosal-Penis Nigera
         </div>
     </footer>
 
@@ -863,9 +863,9 @@
                     const date = formatDateTime(item.timestamp);
                     const user = item.username || 'Неизвестный пользователь';
                     let actionText = 'Изменение';
-                    if (item.action === 'create') actionText = '📝 Создание статьи';
-                    else if (item.action === 'restore') actionText = '🔄 Восстановление';
-                    else if (item.action === 'edit') actionText = '✏️ Редактирование';
+                    if (item.action === 'create') actionText = 'Создание статьи';
+                    else if (item.action === 'restore') actionText = 'Восстановление';
+                    else if (item.action === 'edit') actionText = 'Редактирование';
 
                     html += `
                         <div class="history-item">
@@ -1007,7 +1007,7 @@
             } else if (isProtected && currentUser) {
                 toolsRightHtml += `
                     <div class="tool-item">
-                        <a href="#" class="edit-btn protected" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
+                        <a href="https://wikivnezakona.cc.cd/article?id=eHa22PK7P72LE2Th3SbB" class="edit-btn protected" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать" style="opacity:0.6;">
                             <span class="lock-overlay">
                                 <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/lock.svg" alt="Закрытый замок" style="width:14px;height:14px;filter:invert(0.4);">
@@ -1164,7 +1164,7 @@
 
         telegramLink.addEventListener('click', (e) => {
             e.preventDefault();
-            window.open('https://t.me/your_channel', '_blank');
+            window.open('https://t.me/wikivnezakona', '_blank');
             closeMenu();
         });
 
