@@ -5,4 +5,19 @@
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://wikivnezakona.cc.cd/article.html?id=0K1Sn680HKIwhSKL9EDI</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivnezakona.cc.cd/article.html?id=Ec6eF8D3HSM7owk9CCrO</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://wikivnezakona.cc.cd/article.html?id=bOG5774xmXijRnkm6tDo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
