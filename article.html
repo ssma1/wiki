@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Викивнезакона — Статья</title>
     
+    <!-- ===== SEO МЕТА-ТЕГИ (будут перезаписаны JS) ===== -->
     <meta property="og:title" content="Викивнезакона">
     <meta property="og:description" content="Свободная энциклопедия, которую может редактировать каждый">
     <meta property="og:url" content="https://wikivnezakona.cc.cd/">
@@ -62,7 +63,7 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 12px 16px; flex: 1; }
         .article-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
-        .page-title { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 30px; font-weight: 400; color: #000; margin: 0; line-height: 1.2; }
+        .page-title { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 30px; font-weight: 400; color: #000; margin: 0; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; }
         .article-tabs { display: flex; gap: 0; border-bottom: 1px solid #eaecf0; margin-bottom: 12px; }
         .article-tabs .tab { padding: 8px 16px; font-size: 14px; color: #54595d; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
         .article-tabs .tab.active { color: #202122; border-bottom-color: #36c; font-weight: 500; }
@@ -85,10 +86,9 @@
         .history-btn:hover { background: #eaecf0; }
         .history-btn img { width: 18px; height: 18px; filter: invert(0.4); }
 
-        /* 🔥 ДЛЯ ТЕКСТА БЕЗ ПРОБЕЛОВ */
-        .article-body { background: #ffffff; padding: 20px 24px; border: 1px solid #eaecf0; border-radius: 2px; margin-bottom: 16px; line-height: 1.7; font-size: 15px; overflow-wrap: break-word; word-break: break-word; flex: 1; }
-        .article-body p { margin-bottom: 12px; }
-        .article-body a { color: #0645ad; text-decoration: none; cursor: pointer; }
+        .article-body { background: #ffffff; padding: 20px 24px; border: 1px solid #eaecf0; border-radius: 2px; margin-bottom: 16px; line-height: 1.7; font-size: 15px; overflow-wrap: break-word; word-wrap: break-word; flex: 1; }
+        .article-body p { margin-bottom: 12px; overflow-wrap: break-word; word-wrap: break-word; }
+        .article-body a { color: #0645ad; text-decoration: none; cursor: pointer; overflow-wrap: break-word; word-wrap: break-word; }
         .article-body a:hover { text-decoration: underline; }
         .article-body .ref { color: #0645ad; font-size: 13px; vertical-align: super; cursor: pointer; text-decoration: none; }
         .article-body .ref:hover { text-decoration: underline; }
@@ -96,12 +96,14 @@
         .article-body i { font-style: italic; }
         .article-body u { text-decoration: underline; }
 
-        .article-body .qa-block { background: #f0f4ff; border-left: 4px solid #36c; padding: 10px 14px; margin: 10px 0; border-radius: 2px; }
+        .article-body .qa-block { background: #f0f4ff; border-left: 4px solid #36c; padding: 10px 14px; margin: 10px 0; border-radius: 2px; overflow-wrap: break-word; word-wrap: break-word; }
         .article-body .qa-block .qa-title { font-weight: 600; color: #202122; }
 
         .article-body .wiki-branch {
             border-bottom: 1px solid #c8ccd1;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
         }
         .article-body .wiki-branch .branch-toggle {
             display: flex;
@@ -113,6 +115,8 @@
             font-weight: 400;
             color: #202122;
             user-select: none;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
         }
         .article-body .wiki-branch .branch-toggle .arrow-icon {
             width: 12px;
@@ -121,13 +125,10 @@
             opacity: 0.6;
             transition: transform 0.2s ease-in-out;
             transform: rotate(0deg);
+            flex-shrink: 0;
         }
-        .article-body .wiki-branch .branch-toggle .arrow-icon.closed {
-            transform: rotate(0deg);
-        }
-        .article-body .wiki-branch .branch-toggle .arrow-icon.open {
-            transform: rotate(180deg);
-        }
+        .article-body .wiki-branch .branch-toggle .arrow-icon.closed { transform: rotate(0deg); }
+        .article-body .wiki-branch .branch-toggle .arrow-icon.open { transform: rotate(180deg); }
         .article-body .wiki-branch .branch-body {
             display: none;
             padding: 0 15px 15px 42px;
@@ -135,15 +136,17 @@
             line-height: 1.6;
             color: #202122;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
         }
 
-        .infobox { float: right; width: 280px; margin: 0 0 16px 16px; background: #f8f9fa; border: 1px solid #a2a9b1; border-collapse: collapse; font-size: 14px; clear: right; word-break: break-word; }
-        .infobox-header { padding: 8px 12px; font-weight: 600; font-size: 16px; text-align: center; }
+        .infobox { float: right; width: 280px; margin: 0 0 16px 16px; background: #f8f9fa; border: 1px solid #a2a9b1; border-collapse: collapse; font-size: 14px; clear: right; overflow-wrap: break-word; word-wrap: break-word; }
+        .infobox-header { padding: 8px 12px; font-weight: 600; font-size: 16px; text-align: center; overflow-wrap: break-word; word-wrap: break-word; }
         .infobox-image-container { text-align: center; padding: 8px; background: #fff; }
         .infobox-main-img { max-width: 100%; max-height: 200px; height: auto; }
         .infobox-table { width: 100%; border-collapse: collapse; }
-        .infobox-table th { background: none; padding: 6px 10px; text-align: left; font-weight: 700; width: 40%; font-size: 13px; border: none; }
-        .infobox-table td { padding: 6px 10px; font-size: 13px; border: none; }
+        .infobox-table th { background: none; padding: 6px 10px; text-align: left; font-weight: 700; width: 40%; font-size: 13px; border: none; overflow-wrap: break-word; word-wrap: break-word; }
+        .infobox-table td { padding: 6px 10px; font-size: 13px; border: none; overflow-wrap: break-word; word-wrap: break-word; }
         .infobox-table tr { border-bottom: 1px solid #eaecf0; }
         .infobox-table tr:last-child { border-bottom: none; }
         .infobox-table a { color: #0645ad; text-decoration: none; }
@@ -174,6 +177,7 @@
         .loading-text { text-align: center; padding: 40px 0; color: #72777d; font-size: 15px; }
         .error-text { text-align: center; padding: 40px 0; color: #d33; font-size: 15px; }
 
+        /* ===== МОДАЛЬНОЕ ОКНО ИСТОРИИ ===== */
         .history-modal {
             display: none;
             position: fixed;
@@ -188,17 +192,62 @@
             padding: 20px;
         }
         .history-modal.active { display: flex; }
-        .history-modal .modal-content { background: #fff; max-width: 800px; width: 100%; max-height: 90vh; border-radius: 4px; padding: 24px; overflow-y: auto; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .history-modal .modal-close { position: sticky; top: 0; float: right; background: none; border: none; font-size: 28px; cursor: pointer; color: #72777d; z-index: 10; padding: 0 8px; }
+        .history-modal .modal-content {
+            background: #fff;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            border-radius: 4px;
+            padding: 24px;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .history-modal .modal-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #72777d;
+            z-index: 10;
+            padding: 0 8px;
+        }
         .history-modal .modal-close:hover { color: #202122; }
-        .history-modal .modal-title { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 24px; font-weight: 400; margin-bottom: 16px; color: #202122; }
-        .history-item { border-bottom: 1px solid #eaecf0; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .history-modal .modal-title {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 16px;
+            color: #202122;
+        }
+        .history-item {
+            border-bottom: 1px solid #eaecf0;
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
         .history-item:last-child { border-bottom: none; }
         .history-item .history-info { flex: 1; }
         .history-item .history-date { font-size: 13px; color: #72777d; }
         .history-item .history-user { font-size: 13px; color: #202122; font-weight: 500; }
         .history-item .history-action { font-size: 13px; color: #54595d; }
-        .history-item .history-restore { background: #36c; color: #fff; border: none; padding: 4px 12px; border-radius: 2px; cursor: pointer; font-size: 12px; transition: background 0.15s; font-family: inherit; }
+        .history-item .history-restore {
+            background: #36c;
+            color: #fff;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
         .history-item .history-restore:hover { background: #2a4b8d; }
         .history-empty { text-align: center; color: #72777d; padding: 30px 0; }
 
@@ -260,11 +309,14 @@
         <div class="menu-footer"><a href="#">Описание</a> • <a href="#">Отказ от ответственности</a><br><span style="font-size: 11px;">© Викивнезакона</span></div>
     </nav>
 
+    <!-- Модальное окно истории -->
     <div class="history-modal" id="historyModal">
         <div class="modal-content">
             <button class="modal-close" id="historyModalClose">&times;</button>
             <div class="modal-title">История изменений</div>
-            <div id="historyList"><div class="history-empty">Загрузка истории...</div></div>
+            <div id="historyList">
+                <div class="history-empty">Загрузка истории...</div>
+            </div>
         </div>
     </div>
 
@@ -285,10 +337,626 @@
     </footer>
 
     <script>
-        // СКРИПТ — ТОТ ЖЕ, ЧТО ВЫШЕ (полный, с историей, word-break, правами доступа)
-        // Я его уже давал полностью в предыдущем сообщении, он идентичен.
-        // Здесь просто вставь полный скрипт из article.html выше
-        // (он слишком большой, чтобы дублировать его полностью, но он уже есть в истории)
+        const firebaseConfig = {
+            apiKey: "AIzaSyArcDmBhon_3xLtksvF-9M54HP8bHj9hII",
+            authDomain: "sosial2-440f4.firebaseapp.com",
+            databaseURL: "https://sosial2-440f4-default-rtdb.firebaseio.com",
+            projectId: "sosial2-440f4",
+            storageBucket: "sosial2-440f4.firebasestorage.app",
+            messagingSenderId: "365488411767",
+            appId: "1:365488411767:web:55f9e4b2db543c2c8aa272",
+            measurementId: "G-0X53TXRXW9"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const container = document.getElementById('articleContainer');
+        const menuToggle = document.getElementById('menuToggle');
+        const burgerMenu = document.getElementById('burgerMenu');
+        const burgerOverlay = document.getElementById('burgerOverlay');
+        const burgerClose = document.getElementById('burgerClose');
+        const authStatusText = document.getElementById('authStatusText');
+        const loginMenuText = document.getElementById('loginMenuText');
+        const loginMenuBtn = document.getElementById('loginMenuBtn');
+        const randomArticleBtn = document.getElementById('randomArticleBtn');
+        const addArticleMenuBtn = document.getElementById('addArticleMenuBtn');
+        const telegramLink = document.getElementById('telegramLink');
+        const historyModal = document.getElementById('historyModal');
+        const historyModalClose = document.getElementById('historyModalClose');
+        const historyList = document.getElementById('historyList');
+
+        function openMenu() { burgerMenu.classList.add('open'); burgerOverlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeMenu() { burgerMenu.classList.remove('open'); burgerOverlay.classList.remove('active'); document.body.style.overflow = ''; }
+        menuToggle.addEventListener('click', openMenu);
+        burgerClose.addEventListener('click', closeMenu);
+        burgerOverlay.addEventListener('click', closeMenu);
+
+        historyModalClose.addEventListener('click', () => {
+            historyModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+        historyModal.addEventListener('click', (e) => {
+            if (e.target === historyModal) {
+                historyModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        let currentUser = null;
+        let currentUserRole = 'user';
+        let currentUsername = '';
+        let currentArticleData = null;
+        let currentArticleId = null;
+
+        auth.onAuthStateChanged(user => {
+            currentUser = user;
+            if (user) {
+                db.collection('users').doc(user.uid).get().then(doc => {
+                    if (doc.exists) {
+                        currentUserRole = doc.data().role || 'user';
+                        currentUsername = doc.data().username || user.email.split('@')[0] || 'Пользователь';
+                    } else {
+                        currentUserRole = 'user';
+                        currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    }
+                    updateAuthUI();
+                    const id = getArticleId();
+                    if (id) loadArticle(id);
+                }).catch(() => {
+                    currentUserRole = 'user';
+                    currentUsername = user.email.split('@')[0] || 'Пользователь';
+                    updateAuthUI();
+                    const id = getArticleId();
+                    if (id) loadArticle(id);
+                });
+            } else {
+                currentUserRole = 'user';
+                currentUsername = '';
+                updateAuthUI();
+                const id = getArticleId();
+                if (id) loadArticle(id);
+            }
+        });
+
+        function updateAuthUI() {
+            if (currentUser) {
+                authStatusText.innerHTML = `<span class="user-email">${escapeHtml(currentUsername)}</span> (${currentUserRole === 'admin' ? 'админ' : 'пользователь'})<br><button class="logout-btn" id="logoutBtn">Выйти</button>`;
+                loginMenuText.textContent = escapeHtml(currentUsername);
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        auth.signOut();
+                        closeMenu();
+                        window.location.href = '/';
+                    });
+                }
+            } else {
+                authStatusText.textContent = 'Вы не авторизованы';
+                loginMenuText.textContent = 'Войти';
+            }
+        }
+
+        loginMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (currentUser) {
+                window.location.href = '/profile?uid=' + currentUser.uid;
+            } else {
+                window.location.href = '/login';
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function getArticleId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
+
+        function parseTags(text) {
+            if (!text) return '';
+            let html = escapeHtml(text);
+            html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
+            html = html.replace(/\[italic\](.*?)\[\/italic\]/g, '<i>$1</i>');
+            html = html.replace(/__(.*?)__/g, '<u>$1</u>');
+            html = html.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
+            html = html.replace(/\[url=([^\]]+)\](.*?)\[\/url\]/g, '<a href="$1" target="_blank">$2</a>');
+            html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
+            html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
+                const cleanTitle = title || 'Вопрос-Ответ';
+                return `<div class="qa-block"><strong>${escapeHtml(cleanTitle)}</strong><p>${escapeHtml(content)}</p></div>`;
+            });
+            return html;
+        }
+
+        function buildInfobox(data) {
+            let rows = '';
+            if (data.fields) {
+                for (const [key, value] of Object.entries(data.fields)) {
+                    const parsedKey = parseTags(key);
+                    const parsedValue = parseTags(value);
+                    rows += `<tr><th>${parsedKey}</th><td>${parsedValue}</td></tr>`;
+                }
+            }
+            const imageHtml = data.image ? `<img src="${escapeHtml(data.image)}" class="infobox-main-img" alt="Изображение">` : '';
+            let bgColor = 'rgba(0, 30, 100, 0.12)';
+            if (data.bgColor) {
+                if (data.bgColor.startsWith('#')) {
+                    const hex = data.bgColor.replace('#', '');
+                    const r = parseInt(hex.substring(0, 2), 16);
+                    const g = parseInt(hex.substring(2, 4), 16);
+                    const b = parseInt(hex.substring(4, 6), 16);
+                    bgColor = `rgba(${r}, ${g}, ${b}, 0.12)`;
+                } else if (data.bgColor.startsWith('rgb')) {
+                    bgColor = data.bgColor;
+                }
+            }
+            const parsedTitle = parseTags(data.title || 'Инфобокс');
+            return `
+                <table class="infobox">
+                    <tr><td colspan="2" class="infobox-header" style="background:${bgColor};">${parsedTitle}</td></tr>
+                    ${data.image ? `<tr><td colspan="2" class="infobox-image-container">${imageHtml}</td></tr>` : ''}
+                    ${rows}
+                </table>
+            `;
+        }
+
+        function loadArticle(articleId) {
+            currentArticleId = articleId;
+            container.innerHTML = '<div class="loading-text">Загрузка статьи...</div>';
+            db.collection('articles').doc(articleId).get()
+                .then(doc => {
+                    if (!doc.exists) {
+                        window.location.href = '/404';
+                        return;
+                    }
+                    currentArticleData = { id: doc.id, ...doc.data() };
+                    renderArticle(currentArticleData);
+                })
+                .catch(err => {
+                    container.innerHTML = '<div class="error-text">Ошибка загрузки</div>';
+                    console.error(err);
+                });
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Дата неизвестна';
+            try {
+                if (timestamp.toDate) {
+                    return timestamp.toDate().toDateString();
+                } else if (typeof timestamp === 'string') {
+                    return new Date(timestamp).toDateString();
+                } else {
+                    return new Date(timestamp).toDateString();
+                }
+            } catch {
+                return 'Дата неизвестна';
+            }
+        }
+
+        function formatDateTime(timestamp) {
+            if (!timestamp) return 'Дата неизвестна';
+            try {
+                if (timestamp.toDate) {
+                    return timestamp.toDate().toLocaleString();
+                } else if (typeof timestamp === 'string') {
+                    return new Date(timestamp).toLocaleString();
+                } else {
+                    return new Date(timestamp).toLocaleString();
+                }
+            } catch {
+                return 'Дата неизвестна';
+            }
+        }
+
+        function updateMetaTags(data) {
+            const articleTitle = data.title || 'Без названия';
+            const fullTitle = articleTitle + ' — Викивнезакона';
+            const description = (data.content || '').substring(0, 160).replace(/<[^>]*>/g, '').trim() || 'Свободная энциклопедия, которую может редактировать каждый';
+            const articleUrl = 'https://wikivnezakona.cc.cd/article?id=' + data.id;
+
+            document.title = fullTitle;
+
+            document.querySelector('meta[property="og:title"]')?.setAttribute('content', fullTitle);
+            document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+            document.querySelector('meta[property="og:url"]')?.setAttribute('content', articleUrl);
+
+            document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', fullTitle);
+            document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+
+            document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+            document.querySelector('link[rel="canonical"]')?.setAttribute('href', articleUrl);
+
+            let jsonLdScript = document.getElementById('jsonLd');
+            if (jsonLdScript) {
+                const jsonLdData = {
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": articleTitle,
+                    "description": description,
+                    "url": articleUrl,
+                    "datePublished": data.createdAt ? formatDate(data.createdAt) : '',
+                    "dateModified": data.updatedAt ? formatDate(data.updatedAt) : '',
+                    "author": {
+                        "@type": "Person",
+                        "name": "Пользователь Викивнезакона"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Викивнезакона",
+                        "url": "https://wikivnezakona.cc.cd/"
+                    }
+                };
+                jsonLdScript.textContent = JSON.stringify(jsonLdData);
+            }
+        }
+
+        // =====================================================
+        // 🔥 ОСНОВНАЯ ФУНКЦИЯ РЕНДЕРИНГА
+        // =====================================================
+        function renderArticle(data) {
+            updateMetaTags(data);
+
+            const isAdmin = currentUserRole === 'admin';
+            const isAuthor = currentUser && data.authorId === currentUser.uid;
+            
+            const canEdit = !!currentUser;
+            const canChangeTitle = isAuthor || isAdmin;
+            const canDelete = isAuthor || isAdmin;
+            const canSeeHistory = isAuthor || isAdmin;
+
+            let mainText = parseTags(data.content || '');
+            mainText = mainText.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
+            mainText = mainText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+
+            let infoboxHtml = '';
+            if (data.infobox && Object.keys(data.infobox.fields || {}).length > 0) {
+                infoboxHtml = buildInfobox(data.infobox);
+            }
+
+            let afterHtml = '';
+            if (data.afterContent) {
+                afterHtml = `<p>${parseTags(data.afterContent)}</p>`;
+            }
+
+            let branchesHtml = '';
+            if (data.branches && data.branches.length > 0) {
+                data.branches.forEach(b => {
+                    const parsedTitle = parseTags(b.title || 'Раздел');
+                    const parsedContent = parseTags(b.content || '');
+                    branchesHtml += `
+                        <div class="wiki-branch">
+                            <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                                <img src="${ARROW_SVG}" class="arrow-icon closed" alt="v">
+                                <span>${parsedTitle}</span>
+                            </div>
+                            <div class="branch-body">
+                                <p>${parsedContent}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            const date = formatDate(data.createdAt);
+
+            let deleteHtml = '';
+            if (canDelete) {
+                deleteHtml = `<button class="delete-btn" id="deleteArticleBtn">Удалить</button>`;
+            }
+
+            const shareUrl = window.location.href;
+
+            let toolsRightHtml = `
+                <div class="tool-item">
+                    <a href="#"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/language.svg" alt="Язык"></a>
+                </div>
+                <div class="tool-item">
+                    <a href="#"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/star.svg" alt="В избранное"></a>
+                </div>
+            `;
+
+            // 🔥 Кнопка редактирования — для всех залогиненных
+            if (canEdit) {
+                toolsRightHtml += `
+                    <div class="tool-item">
+                        <a href="/add?id=${data.id}" class="edit-btn" title="Редактировать">
+                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
+                        </a>
+                    </div>
+                `;
+            } else {
+                toolsRightHtml += `
+                    <div class="tool-item">
+                        <a href="/reg" class="edit-btn" title="Войдите чтобы редактировать">
+                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
+                        </a>
+                    </div>
+                `;
+            }
+
+            // 🔥 История — только автор/админ
+            if (canSeeHistory) {
+                toolsRightHtml += `
+                    <div class="tool-item">
+                        <button class="history-btn" id="historyBtn" title="История изменений">
+                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/history.svg" alt="История">
+                            История
+                        </button>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="article-header">
+                    <h1 class="page-title">${escapeHtml(data.title)}</h1>
+                    ${deleteHtml}
+                </div>
+
+                <div class="article-tabs">
+                    <button class="tab active">Статья</button>
+                    <button class="tab" id="talkTab">Обсуждение</button>
+                </div>
+
+                <div class="article-tools">
+                    <div class="tool-left">
+                        <button class="share-btn" id="shareBtn" title="Поделиться">
+                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/share.svg" alt="Поделиться">
+                        </button>
+                    </div>
+                    <div class="tool-right">
+                        ${toolsRightHtml}
+                    </div>
+                </div>
+
+                <div class="article-body">
+                    ${mainText}
+                    ${infoboxHtml}
+                    ${afterHtml}
+                    ${branchesHtml}
+                </div>
+
+                <div class="last-edited">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/history.svg" width="18" alt="Время">
+                    <span>Последнее обновление: ${escapeHtml(date)}</span>
+                    ${canSeeHistory ? `&nbsp;•&nbsp; <span class="history-link" id="historyLink">История изменений</span>` : ''}
+                </div>
+
+                <div class="error-report">
+                    <a href="https://t.me/CMEPTb_AHTUKOMAM" target="_blank">Сообщить об ошибке</a>
+                </div>
+            `;
+
+            document.getElementById('deleteArticleBtn')?.addEventListener('click', () => {
+                if (confirm('Удалить статью?')) deleteArticle(data.id, data);
+            });
+
+            document.getElementById('shareBtn')?.addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({ title: data.title, text: data.title + ' — Викивнезакона', url: shareUrl })
+                        .catch(() => {});
+                } else {
+                    navigator.clipboard.writeText(shareUrl).then(() => alert('Ссылка скопирована!'))
+                        .catch(() => prompt('Скопируйте ссылку:', shareUrl));
+                }
+            });
+
+            document.getElementById('talkTab').addEventListener('click', () => {
+                window.location.href = '/talk?articleId=' + data.id;
+            });
+
+            const historyBtn = document.getElementById('historyBtn');
+            const historyLink = document.getElementById('historyLink');
+            const openHistory = () => {
+                if (canSeeHistory) {
+                    loadHistory(data.id);
+                    historyModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            };
+            if (historyBtn) historyBtn.addEventListener('click', openHistory);
+            if (historyLink) historyLink.addEventListener('click', openHistory);
+
+            history.replaceState(null, '', '/article?id=' + data.id);
+        }
+
+        // =====================================================
+        // ИСТОРИЯ ИЗМЕНЕНИЙ
+        // =====================================================
+        async function loadHistory(articleId) {
+            historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
+            try {
+                const doc = await db.collection('articles').doc(articleId).get();
+                if (!doc.exists) {
+                    historyList.innerHTML = '<div class="history-empty">Статья не найдена</div>';
+                    return;
+                }
+                
+                const data = doc.data();
+                const history = data.history || [];
+                
+                if (history.length === 0) {
+                    historyList.innerHTML = '<div class="history-empty">История изменений пуста</div>';
+                    return;
+                }
+
+                const sortedHistory = [...history].reverse();
+                
+                let html = '';
+                sortedHistory.forEach((item, index) => {
+                    const date = formatDateTime(item.timestamp);
+                    const user = item.username || 'Неизвестный пользователь';
+                    let actionText = 'Изменение';
+                    if (item.action === 'create') actionText = '📝 Создание статьи';
+                    else if (item.action === 'restore') actionText = '🔄 Восстановление';
+                    else if (item.action === 'edit') actionText = '✏️ Редактирование';
+                    
+                    html += `
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-user">${escapeHtml(user)}</div>
+                                <div class="history-date">${escapeHtml(date)}</div>
+                                <div class="history-action">${escapeHtml(actionText)}</div>
+                            </div>
+                            ${index > 0 ? `<button class="history-restore" data-index="${index}">Восстановить</button>` : ''}
+                        </div>
+                    `;
+                });
+
+                historyList.innerHTML = html;
+
+                document.querySelectorAll('.history-restore').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const index = parseInt(btn.dataset.index);
+                        if (confirm('Восстановить эту версию?')) {
+                            await restoreVersion(articleId, index);
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error('Ошибка загрузки истории:', err);
+                historyList.innerHTML = '<div class="history-empty">Ошибка загрузки истории</div>';
+            }
+        }
+
+        // =====================================================
+        // ВОССТАНОВЛЕНИЕ ВЕРСИИ
+        // =====================================================
+        async function restoreVersion(articleId, index) {
+            const doc = await db.collection('articles').doc(articleId).get();
+            if (!doc.exists) {
+                alert('Статья не найдена');
+                return;
+            }
+            const data = doc.data();
+            const isAuthor = currentUser && data.authorId === currentUser.uid;
+            const isAdmin = currentUserRole === 'admin';
+            
+            if (!isAuthor && !isAdmin) {
+                alert('Только автор или администратор могут восстанавливать версии');
+                return;
+            }
+
+            try {
+                const history = data.history || [];
+                
+                if (index >= history.length) {
+                    alert('Версия не найдена');
+                    return;
+                }
+                
+                const versionIndex = history.length - 1 - index;
+                const version = history[versionIndex];
+                
+                if (!version || !version.data) {
+                    alert('Данные версии повреждены');
+                    return;
+                }
+                
+                const restoredData = version.data;
+                
+                await db.collection('articles').doc(articleId).update({
+                    title: restoredData.title,
+                    content: restoredData.content,
+                    afterContent: restoredData.afterContent || '',
+                    infobox: restoredData.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
+                    branches: restoredData.branches || [],
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                await db.collection('articles').doc(articleId).update({
+                    history: firebase.firestore.FieldValue.arrayUnion({
+                        action: 'restore',
+                        userId: currentUser?.uid || 'unknown',
+                        username: currentUsername || 'Неизвестный',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        data: restoredData,
+                        restoredFrom: versionIndex
+                    })
+                });
+
+                alert('✅ Версия восстановлена!');
+                historyModal.classList.remove('active');
+                document.body.style.overflow = '';
+                loadArticle(articleId);
+            } catch (err) {
+                console.error('Ошибка восстановления:', err);
+                alert('❌ Ошибка восстановления: ' + err.message);
+            }
+        }
+
+        // =====================================================
+        // УДАЛЕНИЕ СТАТЬИ
+        // =====================================================
+        function deleteArticle(articleId, data) {
+            if (!currentUser || (currentUserRole !== 'admin' && data.authorId !== currentUser.uid)) {
+                alert('Только администраторы и автор могут удалять статьи');
+                return;
+            }
+            db.collection('articles').doc(articleId).get().then(doc => {
+                if (!doc.exists) return;
+                const data = doc.data();
+                return db.collection('deletedArticles').doc(articleId).set({
+                    title: data.title,
+                    content: data.content,
+                    infobox: data.infobox || null,
+                    deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    deletedBy: currentUser.uid,
+                    originalAuthor: data.authorId || 'unknown'
+                }).then(() => db.collection('articles').doc(articleId).delete())
+                .then(() => {
+                    db.collection('logs').add({
+                        action: 'delete',
+                        articleId: articleId,
+                        title: data.title,
+                        userId: currentUser.uid,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    alert('🗑️ Статья удалена');
+                    window.location.href = '/';
+                });
+            }).catch(err => alert('❌ Ошибка: ' + err.message));
+        }
+
+        randomArticleBtn.addEventListener('click', () => {
+            closeMenu();
+            db.collection('articles').get().then(snapshot => {
+                const ids = [];
+                snapshot.forEach(doc => ids.push(doc.id));
+                if (ids.length === 0) { alert('Статей пока нет'); return; }
+                window.location.href = '/article?id=' + ids[Math.floor(Math.random() * ids.length)];
+            });
+        });
+
+        addArticleMenuBtn.addEventListener('click', () => {
+            closeMenu();
+            if (!currentUser) {
+                alert('Войдите в систему');
+                window.location.href = '/login';
+                return;
+            }
+            window.location.href = '/add';
+        });
+
+        telegramLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.open('https://t.me/your_channel', '_blank');
+            closeMenu();
+        });
+
+        const id = getArticleId();
+        if (id) loadArticle(id);
+        else container.innerHTML = '<div class="error-text">ID статьи не указан</div>';
     </script>
 </body>
 </html>
