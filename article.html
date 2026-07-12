@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Викивнезакона — Статья</title>
+    
+    <!-- ===== SEO МЕТА-ТЕГИ (будут перезаписаны JS) ===== -->
+    <meta property="og:title" content="Викивнезакона">
+    <meta property="og:description" content="Свободная энциклопедия, которую может редактировать каждый">
+    <meta property="og:url" content="https://wikivnezakona.cc.cd/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Викивнезакона">
+    <meta property="og:image" content="https://wikivnezakona.cc.cd/logo.png">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Викивнезакона">
+    <meta name="twitter:description" content="Свободная энциклопедия, которую может редактировать каждый">
+
+    <meta name="description" content="Свободная энциклопедия, которую может редактировать каждый">
+    <link rel="canonical" href="https://wikivnezakona.cc.cd/">
+
+    <script type="application/ld+json" id="jsonLd">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Викивнезакона",
+        "url": "https://wikivnezakona.cc.cd/"
+    }
+    </script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -485,10 +509,8 @@
                 }
             }
             const imageHtml = data.image ? `<img src="${escapeHtml(data.image)}" class="infobox-main-img" alt="Изображение">` : '';
-            // ПОЛУПРОЗРАЧНОСТЬ — точно как в add.html (rgba с opacity 0.12)
             let bgColor = 'rgba(0, 30, 100, 0.12)';
             if (data.bgColor) {
-                // Если пришёл hex или rgb, конвертируем в rgba с opacity 0.12
                 if (data.bgColor.startsWith('#')) {
                     const hex = data.bgColor.replace('#', '');
                     const r = parseInt(hex.substring(0, 2), 16);
@@ -496,7 +518,6 @@
                     const b = parseInt(hex.substring(4, 6), 16);
                     bgColor = `rgba(${r}, ${g}, ${b}, 0.12)`;
                 } else if (data.bgColor.startsWith('rgb')) {
-                    // Если уже rgba, просто используем
                     bgColor = data.bgColor;
                 }
             }
@@ -528,7 +549,85 @@
                 });
         }
 
+        // =====================================================
+        // ОТОБРАЖЕНИЕ ДАТЫ (с поддержкой serverTimestamp)
+        // =====================================================
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Дата неизвестна';
+            try {
+                if (timestamp.toDate) {
+                    return timestamp.toDate().toDateString();
+                } else {
+                    return new Date(timestamp).toDateString();
+                }
+            } catch {
+                return 'Дата неизвестна';
+            }
+        }
+
+        function formatDateTime(timestamp) {
+            if (!timestamp) return 'Дата неизвестна';
+            try {
+                if (timestamp.toDate) {
+                    return timestamp.toDate().toLocaleString();
+                } else {
+                    return new Date(timestamp).toLocaleString();
+                }
+            } catch {
+                return 'Дата неизвестна';
+            }
+        }
+
+        // =====================================================
+        // 🔥 ОБНОВЛЕНИЕ МЕТА-ТЕГОВ (ИСПРАВЛЕННОЕ)
+        // =====================================================
+        function updateMetaTags(data) {
+            const articleTitle = data.title || 'Без названия';
+            const fullTitle = articleTitle + ' — Викивнезакона';
+            const description = (data.content || '').substring(0, 160).replace(/<[^>]*>/g, '').trim() || 'Свободная энциклопедия, которую может редактировать каждый';
+            const articleUrl = 'https://wikivnezakona.cc.cd/article?id=' + data.id;
+
+            document.title = fullTitle;
+
+            document.querySelector('meta[property="og:title"]')?.setAttribute('content', fullTitle);
+            document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+            document.querySelector('meta[property="og:url"]')?.setAttribute('content', articleUrl);
+
+            document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', fullTitle);
+            document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+
+            document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+            document.querySelector('link[rel="canonical"]')?.setAttribute('href', articleUrl);
+
+            let jsonLdScript = document.getElementById('jsonLd');
+            if (jsonLdScript) {
+                const jsonLdData = {
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": articleTitle,
+                    "description": description,
+                    "url": articleUrl,
+                    "datePublished": data.createdAt ? formatDate(data.createdAt) : '',
+                    "dateModified": data.updatedAt ? formatDate(data.updatedAt) : '',
+                    "author": {
+                        "@type": "Person",
+                        "name": "Пользователь Викивнезакона"
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Викивнезакона",
+                        "url": "https://wikivnezakona.cc.cd/"
+                    }
+                };
+                jsonLdScript.textContent = JSON.stringify(jsonLdData);
+            }
+
+            console.log('✅ Мета-теги обновлены:', fullTitle);
+        }
+
         function renderArticle(data) {
+            updateMetaTags(data);
+
             const isAdmin = currentUserRole === 'admin';
             const isAuthor = currentUser && data.authorId === currentUser.uid;
             const canEdit = !!currentUser;
@@ -568,7 +667,7 @@
                 });
             }
 
-            const date = data.createdAt ? new Date(data.createdAt).toDateString() : 'Дата неизвестна';
+            const date = formatDate(data.createdAt);
 
             let deleteHtml = '';
             if (canDelete) {
@@ -688,29 +787,31 @@
             history.replaceState(null, '', '/article?id=' + data.id);
         }
 
-        // ===== ИСТОРИЯ ИЗМЕНЕНИЙ — ИСПРАВЛЕННАЯ =====
+        // =====================================================
+        // ИСТОРИЯ ИЗМЕНЕНИЙ (из массива внутри статьи)
+        // =====================================================
         async function loadHistory(articleId) {
             historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
             try {
-                const historySnapshot = await db.collection('articleHistory')
-                    .where('articleId', '==', articleId)
-                    .orderBy('timestamp', 'desc')
-                    .limit(100)
-                    .get();
-
-                let historyItems = [];
-                historySnapshot.forEach(doc => {
-                    historyItems.push({ id: doc.id, ...doc.data() });
-                });
-
-                if (historyItems.length === 0) {
+                const doc = await db.collection('articles').doc(articleId).get();
+                if (!doc.exists) {
+                    historyList.innerHTML = '<div class="history-empty">Статья не найдена</div>';
+                    return;
+                }
+                
+                const data = doc.data();
+                const history = data.history || [];
+                
+                if (history.length === 0) {
                     historyList.innerHTML = '<div class="history-empty">История изменений пуста</div>';
                     return;
                 }
 
+                const sortedHistory = [...history].reverse();
+                
                 let html = '';
-                historyItems.forEach((item, index) => {
-                    const date = item.timestamp ? new Date(item.timestamp.toDate ? item.timestamp.toDate() : item.timestamp).toLocaleString() : 'Дата неизвестна';
+                sortedHistory.forEach((item, index) => {
+                    const date = formatDateTime(item.timestamp);
                     const user = item.username || 'Неизвестный пользователь';
                     let actionText = 'Изменение';
                     if (item.action === 'create') actionText = '📝 Создание статьи';
@@ -724,7 +825,7 @@
                                 <div class="history-date">${escapeHtml(date)}</div>
                                 <div class="history-action">${escapeHtml(actionText)}</div>
                             </div>
-                            ${index > 0 ? `<button class="history-restore" data-history-id="${item.id}">Восстановить</button>` : ''}
+                            ${index > 0 ? `<button class="history-restore" data-index="${index}">Восстановить</button>` : ''}
                         </div>
                     `;
                 });
@@ -733,9 +834,9 @@
 
                 document.querySelectorAll('.history-restore').forEach(btn => {
                     btn.addEventListener('click', async () => {
-                        const historyId = btn.dataset.historyId;
+                        const index = parseInt(btn.dataset.index);
                         if (confirm('Восстановить эту версию?')) {
-                            await restoreVersion(articleId, historyId);
+                            await restoreVersion(articleId, index);
                         }
                     });
                 });
@@ -746,15 +847,34 @@
             }
         }
 
-        async function restoreVersion(articleId, historyId) {
+        // =====================================================
+        // ВОССТАНОВЛЕНИЕ ВЕРСИИ
+        // =====================================================
+        async function restoreVersion(articleId, index) {
             try {
-                const doc = await db.collection('articleHistory').doc(historyId).get();
+                const doc = await db.collection('articles').doc(articleId).get();
                 if (!doc.exists) {
+                    alert('Статья не найдена');
+                    return;
+                }
+                
+                const data = doc.data();
+                const history = data.history || [];
+                
+                if (index >= history.length) {
                     alert('Версия не найдена');
                     return;
                 }
-                const data = doc.data();
-                const restoredData = data.data;
+                
+                const versionIndex = history.length - 1 - index;
+                const version = history[versionIndex];
+                
+                if (!version || !version.data) {
+                    alert('Данные версии повреждены');
+                    return;
+                }
+                
+                const restoredData = version.data;
                 
                 await db.collection('articles').doc(articleId).update({
                     title: restoredData.title,
@@ -762,17 +882,18 @@
                     afterContent: restoredData.afterContent || '',
                     infobox: restoredData.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
                     branches: restoredData.branches || [],
-                    updatedAt: Date.now()
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                await db.collection('articleHistory').add({
-                    articleId: articleId,
-                    userId: currentUser?.uid || 'unknown',
-                    username: currentUsername || 'Неизвестный',
-                    action: 'restore',
-                    timestamp: new Date(),
-                    data: restoredData,
-                    restoredFrom: historyId
+                await db.collection('articles').doc(articleId).update({
+                    history: firebase.firestore.FieldValue.arrayUnion({
+                        action: 'restore',
+                        userId: currentUser?.uid || 'unknown',
+                        username: currentUsername || 'Неизвестный',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        data: restoredData,
+                        restoredFrom: versionIndex
+                    })
                 });
 
                 alert('✅ Версия восстановлена!');
@@ -794,11 +915,21 @@
                 if (!doc.exists) return;
                 const data = doc.data();
                 return db.collection('deletedArticles').doc(articleId).set({
-                    title: data.title, content: data.content, infobox: data.infobox || null,
-                    deletedAt: Date.now(), deletedBy: currentUser.uid, originalAuthor: data.authorId || 'unknown'
+                    title: data.title,
+                    content: data.content,
+                    infobox: data.infobox || null,
+                    deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    deletedBy: currentUser.uid,
+                    originalAuthor: data.authorId || 'unknown'
                 }).then(() => db.collection('articles').doc(articleId).delete())
                 .then(() => {
-                    db.collection('logs').add({ action: 'delete', articleId, title: data.title, userId: currentUser.uid, timestamp: Date.now() });
+                    db.collection('logs').add({
+                        action: 'delete',
+                        articleId: articleId,
+                        title: data.title,
+                        userId: currentUser.uid,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     alert('Статья удалена');
                     window.location.href = '/';
                 });

@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Создание статьи — Викивнезакона</title>
+    
+    <!-- ===== SEO МЕТА-ТЕГИ ===== -->
+    <meta property="og:title" content="Создание статьи — Викивнезакона">
+    <meta property="og:description" content="Создайте новую статью в Викивнезакона — свободной энциклопедии">
+    <meta property="og:url" content="https://wikivnezakona.cc.cd/add">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Викивнезакона">
+    <meta property="og:image" content="https://wikivnezakona.cc.cd/logo.png">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Создание статьи — Викивнезакона">
+    <meta name="twitter:description" content="Создайте новую статью в Викивнезакона — свободной энциклопедии">
+
+    <meta name="description" content="Создайте новую статью в Викивнезакона — свободной энциклопедии">
+    <link rel="canonical" href="https://wikivnezakona.cc.cd/add">
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -329,7 +344,7 @@
         function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
         // ===== IMGBB ЗАГРУЗКА =====
-        const IMGBB_API_KEY = 'ваш_ключ_от_imgbb';
+        const IMGBB_API_KEY = 'a84ecd23831454ac477160e2a7477088';
 
         async function uploadToImgbb(file) {
             const formData = new FormData();
@@ -662,14 +677,14 @@
             if (isEditMode) document.getElementById('deleteBtn')?.addEventListener('click', () => { if (confirm('Удалить статью?')) deleteArticle(); });
         }
 
-        // ===== СОХРАНЕНИЕ В ИСТОРИЮ =====
+        // ===== СОХРАНЕНИЕ В ИСТОРИЮ (с serverTimestamp) =====
         function saveToHistory(articleId, data, action, userId, username) {
-            db.collection('articleHistory').add({
+            return db.collection('articleHistory').add({
                 articleId: articleId,
                 userId: userId || 'unknown',
                 username: username || 'Неизвестный',
                 action: action || 'edit',
-                timestamp: new Date(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 data: {
                     title: data.title,
                     content: data.content,
@@ -705,24 +720,51 @@
             const articleData = {
                 title, content, afterContent,
                 infobox: { title: infoboxTitle, fields, image: infoboxImage, bgColor: infoboxBgColor },
-                branches, updatedAt: Date.now()
+                branches
             };
 
             if (isEditMode && editArticleId) {
-                articleData.authorId = currentUser.uid;
-                db.collection('articles').doc(editArticleId).update(articleData).then(() => {
-                    // Сохраняем в историю
-                    saveToHistory(editArticleId, articleData, 'edit', currentUser.uid, currentUsername);
-                    db.collection('logs').add({ action: 'edit', articleId: editArticleId, title, userId: currentUser.uid, timestamp: Date.now() });
+                const updateData = {
+                    ...articleData,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                if (!existingData?.authorId) {
+                    updateData.authorId = currentUser.uid;
+                }
+                
+                db.collection('articles').doc(editArticleId).update(updateData).then(() => {
+                    return saveToHistory(editArticleId, articleData, 'edit', currentUser.uid, currentUsername);
+                }).then(() => {
+                    db.collection('logs').add({
+                        action: 'edit',
+                        articleId: editArticleId,
+                        title: title,
+                        userId: currentUser.uid,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     showStatus('Статья обновлена!', 'success');
                     setTimeout(() => window.location.href = '/article?id=' + editArticleId, 1200);
                 }).catch(err => showStatus('Ошибка: ' + err.message, 'error'));
             } else {
-                articleData.authorId = currentUser.uid; articleData.createdAt = Date.now(); const newRef = db.collection('articles').doc(); articleData.articleId = newRef.id;
-                newRef.set(articleData).then(() => {
-                    // Сохраняем в историю
-                    saveToHistory(newRef.id, articleData, 'create', currentUser.uid, currentUsername);
-                    db.collection('logs').add({ action: 'create', articleId: newRef.id, title, userId: currentUser.uid, timestamp: Date.now() });
+                const newRef = db.collection('articles').doc();
+                const newArticleData = {
+                    ...articleData,
+                    articleId: newRef.id,
+                    authorId: currentUser.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                newRef.set(newArticleData).then(() => {
+                    return saveToHistory(newRef.id, articleData, 'create', currentUser.uid, currentUsername);
+                }).then(() => {
+                    db.collection('logs').add({
+                        action: 'create',
+                        articleId: newRef.id,
+                        title: title,
+                        userId: currentUser.uid,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     showStatus('Статья создана!', 'success');
                     setTimeout(() => window.location.href = '/article?id=' + newRef.id, 1200);
                 }).catch(err => showStatus('Ошибка: ' + err.message, 'error'));
@@ -738,9 +780,17 @@
                 if (!doc.exists) return; const data = doc.data();
                 return db.collection('deletedArticles').doc(editArticleId).set({
                     title: data.title, content: data.content, infobox: data.infobox || null,
-                    deletedAt: Date.now(), deletedBy: currentUser.uid, originalAuthor: data.authorId || 'unknown'
+                    deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    deletedBy: currentUser.uid,
+                    originalAuthor: data.authorId || 'unknown'
                 }).then(() => db.collection('articles').doc(editArticleId).delete()).then(() => {
-                    db.collection('logs').add({ action: 'delete', articleId: editArticleId, title: data.title, userId: currentUser.uid, timestamp: Date.now() });
+                    db.collection('logs').add({
+                        action: 'delete',
+                        articleId: editArticleId,
+                        title: data.title,
+                        userId: currentUser.uid,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     alert('Статья удалена'); window.location.href = '/';
                 });
             }).catch(err => alert('Ошибка: ' + err.message));
