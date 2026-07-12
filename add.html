@@ -170,7 +170,6 @@
         }
         .preview-content .wiki-link:hover { text-decoration: underline; }
 
-        /* Стили для изображений в превью */
         .preview-content .article-image {
             max-width: 100%;
             height: auto;
@@ -335,7 +334,6 @@
         loginMenuBtn.addEventListener('click', () => { closeMenu(); if (currentUser) window.location.href = '/profile?uid=' + currentUser.uid; else window.location.href = '/login'; });
         function escapeHtml(text) { if (!text) return ''; const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
-        // ===== IMGBB ЗАГРУЗКА =====
         const IMGBB_API_KEY = 'a84ecd23831454ac477160e2a7477088';
 
         async function uploadToImgbb(file) {
@@ -412,7 +410,7 @@
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
         // =====================================================
-        // РАСШИРЕННЫЙ parseTags — ВСЕ ТЕГИ РАБОТАЮТ
+        // 🔥 РАСШИРЕННЫЙ parseTags — ВСЕ ТЕГИ РАБОТАЮТ
         // =====================================================
         function parseTags(text) {
             if (!text) return '';
@@ -432,7 +430,7 @@
             // Сноски
             html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
             
-            // === Изображения [img] с поддержкой размера, выравнивания и ссылки ===
+            // === Изображения ===
             html = html.replace(/\[img\s*(?:size=([^\s\]]+))?\s*(?:align=([^\s\]]+))?\s*(?:link=([^\s\]]+))?\](.*?)\[\/img\]/g, (match, size, align, link, url) => {
                 let sizeClass = '';
                 if (size === 'small') sizeClass = ' article-image-small';
@@ -450,44 +448,50 @@
                 return imgHtml;
             });
             
-            // Простое изображение без параметров (по центру)
             html = html.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" class="article-image article-image-center" alt="Изображение">');
             
             // === Заголовки ===
             html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
             
-            // === QA блоки с поддержкой тегов внутри ===
-            // Цветные QA с поддержкой названий цветов и hex
-            html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
+            // === QA блоки с поддержкой тегов внутри и заголовком ===
+            // 🔥 Цветной QA с заголовком: [qa-color=red:вопрос]ответ[/qa-color]
+            html = html.replace(/\[qa-color=([^\]:]+):([^\]]*)\](.*?)\[\/qa-color\]/gs, (match, color, title, content) => {
                 let colorHex = color;
                 const colorMap = {
-                    'red': '#ff0000',
-                    'blue': '#0000ff',
-                    'green': '#00ff00',
-                    'yellow': '#ffff00',
-                    'orange': '#ff8c00',
-                    'purple': '#800080',
-                    'pink': '#ff69b4',
-                    'cyan': '#00ffff',
-                    'magenta': '#ff00ff',
-                    'white': '#ffffff',
-                    'black': '#000000',
-                    'gray': '#808080',
-                    'grey': '#808080'
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
+                    'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
+                    'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
                 };
                 if (colorMap[color.toLowerCase()]) {
                     colorHex = colorMap[color.toLowerCase()];
                 }
-                // Обрабатываем теги внутри QA
                 const processedContent = parseTags(content);
-                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;">${processedContent}</div>`;
+                const cleanTitle = title || 'Вопрос-Ответ';
+                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;"><strong>${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
             });
             
-            // Обычные QA с заголовком
+            // Обычный QA с заголовком
             html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
                 const cleanTitle = title || 'Вопрос-Ответ';
                 const processedContent = parseTags(content);
-                return `<div style="background:#f0f4ff;border-left:4px solid #36c;padding:10px 14px;margin:10px 0;border-radius:2px;"><strong>${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
+                return `<div class="qa-block"><strong class="qa-title">${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
+            });
+            
+            // Цветной QA без заголовка (только цвет)
+            html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
+                let colorHex = color;
+                const colorMap = {
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
+                    'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
+                    'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
+                };
+                if (colorMap[color.toLowerCase()]) {
+                    colorHex = colorMap[color.toLowerCase()];
+                }
+                const processedContent = parseTags(content);
+                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;">${processedContent}</div>`;
             });
             
             return html;
@@ -550,7 +554,7 @@
                             <code>[color=red]текст[/color]</code> — цветной &nbsp;|&nbsp; <code>[url=адрес]текст[/url]</code> — ссылка &nbsp;|&nbsp;
                             <code>[1]</code> — сноска &nbsp;|&nbsp; <code>===Заголовок===</code> — раздел &nbsp;|&nbsp;
                             <code>[qa="заголовок"]текст[/qa]</code> — блок Вопрос-Ответ &nbsp;|&nbsp;
-                            <code>[qa-color=red]текст[/qa-color]</code> — цветной Вопрос-Ответ &nbsp;|&nbsp;
+                            <code>[qa-color=red:заголовок]текст[/qa-color]</code> — цветной Вопрос-Ответ &nbsp;|&nbsp;
                             <code>[img size=small align=center link=URL]URL[/img]</code> — изображение
                         </div>
                     </div>
@@ -592,7 +596,7 @@
                             <strong>Вопрос-Ответ:</strong> <code>[qa="заголовок"]текст[/qa]</code>
                         </div>
                         <div class="help-item">
-                            <strong>Цветной Вопрос-Ответ:</strong> <code>[qa-color=red]текст[/qa-color]</code>
+                            <strong>Цветной Вопрос-Ответ:</strong> <code>[qa-color=red:заголовок]текст[/qa-color]</code>
                         </div>
                         <div class="help-item">
                             <strong>Изображение:</strong> <code>[img size=small|medium|large align=left|center|right link=URL]URL[/img]</code>
@@ -612,14 +616,20 @@
                         <div class="help-item">
                             <strong>Сноска:</strong> <code>[1]</code>
                         </div>
-                        <div class="help-note">Все теги работают в любом месте: текст статьи, инфобокс, ветки, текст после статьи — везде!</div>
+                        <div class="help-note">✅ Все теги работают в любом месте: текст статьи, инфобокс, ветки, текст после статьи — везде!</div>
                     </div>
 
                     <div class="form-actions">
                         <button type="submit" class="btn-primary" ${isProtected ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>${isEditMode ? 'Сохранить изменения' : 'Опубликовать статью'}</button>
                         <button type="button" class="btn-secondary" id="cancelBtn">Отмена</button>
                         ${isEditMode ? `<button type="button" class="btn-danger" id="deleteBtn">Удалить статью</button>` : ''}
-                        ${isAdmin && isEditMode ? `<button type="button" class="btn-secondary" id="toggleProtectBtn" style="border-color:${isProtected ? '#2a8' : '#d33'};color:${isProtected ? '#2a8' : '#d33'};">${isProtected ? '🔓 Снять защиту' : '🔒 Защитить статью'}</button>` : ''}
+                        ${isAdmin && isEditMode ? `<button type="button" class="btn-secondary" id="toggleProtectBtn" style="border-color:${isProtected ? '#2a8' : '#d33'};color:${isProtected ? '#2a8' : '#d33'};display:flex;align-items:center;gap:6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            ${isProtected ? '🔓 Снять защиту' : 'Защитить статью'}
+                        </button>` : ''}
                     </div>
                 </form>
             `;
@@ -651,7 +661,10 @@
                     else if (tag === 'qa-color') {
                         const color = prompt('Введите цвет (red, blue, #ff0000 и т.д.):');
                         if (color !== null && color.trim()) {
-                            replacement = `[qa-color=${color.trim()}]${selected || 'текст ответа'}[/qa-color]`;
+                            const title = prompt('Введите заголовок для Вопроса-Ответа:');
+                            if (title !== null) {
+                                replacement = `[qa-color=${color.trim()}:${title || 'Вопрос'}]${selected || 'текст ответа'}[/qa-color]`;
+                            }
                         }
                     }
                     else if (tag === 'img') {
@@ -862,7 +875,7 @@
             status.style.display = 'none';
             
             if (!currentUser) { 
-                showStatus('Войдите в систему', 'error'); 
+                showStatus('❌ Войдите в систему', 'error'); 
                 return; 
             }
             
@@ -871,11 +884,11 @@
             const content = document.getElementById('articleContent').value.trim();
             
             if (!title) { 
-                showStatus('Введите название статьи', 'error'); 
+                showStatus('❌ Введите название статьи', 'error'); 
                 return; 
             }
             if (!content) { 
-                showStatus('Введите содержание статьи', 'error'); 
+                showStatus('❌ Введите содержание статьи', 'error'); 
                 return; 
             }
 

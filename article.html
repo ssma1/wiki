@@ -78,14 +78,6 @@
         .share-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; }
         .share-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         .share-btn:hover { background: #eaecf0; }
-        .edit-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; text-decoration: none; position: relative; }
-        .edit-btn img { width: 20px; height: 20px; filter: invert(0.4); }
-        .edit-btn:hover { background: #eaecf0; }
-        .edit-btn .lock-icon { position: absolute; bottom: -2px; right: -4px; font-size: 10px; background: #d33; color: #fff; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; line-height: 1; }
-
-        .history-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; font-family: inherit; font-size: 13px; gap: 4px; }
-        .history-btn:hover { background: #eaecf0; }
-        .history-btn img { width: 18px; height: 18px; filter: invert(0.4); }
 
         .article-body {
             background: #ffffff;
@@ -215,6 +207,44 @@
         .article-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .delete-btn { background: #d33; color: #fff; border: none; padding: 6px 14px; border-radius: 2px; cursor: pointer; font-size: 13px; transition: background 0.15s; font-family: inherit; }
         .delete-btn:hover { background: #b22222; }
+
+        /* 🔥 ИКОНКА КАРАНДАША С ЗАМКОМ */
+        .edit-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 2px;
+            transition: background 0.15s;
+            text-decoration: none;
+            color: #54595d;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .edit-btn .lock-overlay {
+            position: absolute;
+            bottom: -2px;
+            right: -4px;
+            background: #ffffff;
+            border-radius: 50%;
+            padding: 2px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+            width: 14px;
+            height: 14px;
+        }
+        .edit-btn.protected {
+            cursor: not-allowed;
+            opacity: 0.75;
+        }
+        .edit-btn.protected:hover {
+            background: rgba(220, 50, 50, 0.08);
+        }
+
+        .history-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; font-family: inherit; font-size: 13px; gap: 4px; }
+        .history-btn:hover { background: #eaecf0; }
+        .history-btn img { width: 18px; height: 18px; filter: invert(0.4); }
 
         .last-edited { display: flex; align-items: center; gap: 8px; padding: 10px 0; font-size: 13px; color: #72777d; border-top: 1px solid #eaecf0; margin-top: 16px; flex-wrap: wrap; }
         .last-edited .history-link { color: #36c; cursor: pointer; text-decoration: none; }
@@ -537,7 +567,7 @@
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
         // =====================================================
-        // РАСШИРЕННЫЙ parseTags С ПОДДЕРЖКОЙ ВСЕХ ТЕГОВ
+        // 🔥 РАСШИРЕННЫЙ parseTags — ВСЕ ТЕГИ РАБОТАЮТ
         // =====================================================
         function parseTags(text) {
             if (!text) return '';
@@ -557,15 +587,17 @@
             // Сноски
             html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
             
-            // === Изображения [img]URL[/img] с поддержкой размера ===
-            // [img size=small]URL[/img], [img align=center]URL[/img], [img link=URL]URL[/img]
+            // === Изображения ===
             html = html.replace(/\[img\s*(?:size=([^\s\]]+))?\s*(?:align=([^\s\]]+))?\s*(?:link=([^\s\]]+))?\](.*?)\[\/img\]/g, (match, size, align, link, url) => {
                 let sizeClass = '';
-                if (size) sizeClass = ' article-image-' + size;
-                let alignClass = '';
+                if (size === 'small') sizeClass = ' article-image-small';
+                else if (size === 'medium') sizeClass = ' article-image-medium';
+                else if (size === 'large') sizeClass = ' article-image-large';
+                
+                let alignClass = ' article-image-center';
                 if (align === 'left') alignClass = ' article-image-left';
                 else if (align === 'right') alignClass = ' article-image-right';
-                else if (align === 'center') alignClass = ' article-image-center';
+                
                 let imgHtml = `<img src="${url}" class="article-image${sizeClass}${alignClass}" alt="Изображение">`;
                 if (link) {
                     imgHtml = `<a href="${link}" target="_blank">${imgHtml}</a>`;
@@ -573,45 +605,50 @@
                 return imgHtml;
             });
             
-            // Простое изображение без параметров
             html = html.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" class="article-image article-image-center" alt="Изображение">');
             
             // === Заголовки ===
             html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
             
-            // === QA блоки с цветом и поддержкой тегов внутри ===
-            // Сначала обрабатываем цветные QA
-            html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
-                // Определяем цвет (поддерживаем и названия цветов)
+            // === QA блоки с поддержкой тегов внутри и заголовком ===
+            // 🔥 Цветной QA с заголовком: [qa-color=red:вопрос]ответ[/qa-color]
+            html = html.replace(/\[qa-color=([^\]:]+):([^\]]*)\](.*?)\[\/qa-color\]/gs, (match, color, title, content) => {
                 let colorHex = color;
                 const colorMap = {
-                    'red': '#ff0000',
-                    'blue': '#0000ff',
-                    'green': '#00ff00',
-                    'yellow': '#ffff00',
-                    'orange': '#ff8c00',
-                    'purple': '#800080',
-                    'pink': '#ff69b4',
-                    'cyan': '#00ffff',
-                    'magenta': '#ff00ff',
-                    'white': '#ffffff',
-                    'black': '#000000',
-                    'gray': '#808080',
-                    'grey': '#808080'
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
+                    'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
+                    'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
                 };
                 if (colorMap[color.toLowerCase()]) {
                     colorHex = colorMap[color.toLowerCase()];
                 }
-                // Обрабатываем теги внутри QA
                 const processedContent = parseTags(content);
-                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;">${processedContent}</div>`;
+                const cleanTitle = title || 'Вопрос-Ответ';
+                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;"><strong>${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
             });
             
-            // Обычные QA с заголовком
+            // Обычный QA с заголовком
             html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
                 const cleanTitle = title || 'Вопрос-Ответ';
                 const processedContent = parseTags(content);
                 return `<div class="qa-block"><strong class="qa-title">${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
+            });
+            
+            // Цветной QA без заголовка (только цвет)
+            html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
+                let colorHex = color;
+                const colorMap = {
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
+                    'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
+                    'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
+                };
+                if (colorMap[color.toLowerCase()]) {
+                    colorHex = colorMap[color.toLowerCase()];
+                }
+                const processedContent = parseTags(content);
+                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;">${processedContent}</div>`;
             });
             
             return html;
@@ -740,16 +777,20 @@
         }
 
         // =====================================================
-        // ИСТОРИЯ ИЗМЕНЕНИЙ (из отдельной коллекции)
+        // 🔥 ИСТОРИЯ ИЗМЕНЕНИЙ (из отдельной коллекции) — ИСПРАВЛЕНО
         // =====================================================
         async function loadHistory(articleId) {
             historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
             try {
+                console.log('📜 Загрузка истории для статьи:', articleId);
+                
                 const historySnapshot = await db.collection('articleHistory')
                     .where('articleId', '==', articleId)
                     .orderBy('timestamp', 'desc')
                     .limit(100)
                     .get();
+
+                console.log('📊 Найдено записей:', historySnapshot.size);
 
                 let historyItems = [];
                 historySnapshot.forEach(doc => {
@@ -795,7 +836,7 @@
 
             } catch (err) {
                 console.error('❌ Ошибка загрузки истории:', err);
-                historyList.innerHTML = '<div class="history-empty">Ошибка загрузки истории</div>';
+                historyList.innerHTML = '<div class="history-empty">Ошибка загрузки истории: ' + err.message + '</div>';
             }
         }
 
@@ -900,21 +941,28 @@
                 </div>
             `;
 
-            // Кнопка редактирования с замком если защищено
+            // 🔥 Кнопка редактирования с карандашом и замком
             if (canEdit) {
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="/add?id=${data.id}" class="edit-btn" title="Редактировать">
-                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#54595d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                            </svg>
                         </a>
                     </div>
                 `;
             } else if (isProtected && currentUser) {
                 toolsRightHtml += `
                     <div class="tool-item">
-                        <a href="#" class="edit-btn" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
-                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать" style="opacity:0.6;">
-                            <span class="lock-icon">🔒</span>
+                        <a href="#" class="edit-btn protected" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#54595d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                            </svg>
+                            <svg class="lock-overlay" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d33" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
                         </a>
                     </div>
                 `;
@@ -922,7 +970,9 @@
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="/reg" class="edit-btn" title="Войдите чтобы редактировать">
-                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#54595d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                            </svg>
                         </a>
                     </div>
                 `;
@@ -1039,10 +1089,10 @@
                         userId: currentUser.uid,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    alert('Статья удалена');
+                    alert('🗑️ Статья удалена');
                     window.location.href = '/';
                 });
-            }).catch(err => alert('Ошибка: ' + err.message));
+            }).catch(err => alert('❌ Ошибка: ' + err.message));
         }
 
         randomArticleBtn.addEventListener('click', () => {
