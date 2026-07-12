@@ -5,36 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Викивнезакона — Свободная энциклопедия</title>
     
-    <!-- ===== SEO МЕТА-ТЕГИ ===== -->
-    <meta property="og:title" content="Викивнезакона — Свободная энциклопедия">
-    <meta property="og:description" content="Свободная энциклопедия, которую может редактировать каждый">
-    <meta property="og:url" content="https://wikivnezakona.cc.cd/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Викивнезакона">
-    <meta property="og:image" content="https://wikivnezakona.cc.cd/logo.png">
-
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Викивнезакона — Свободная энциклопедия">
-    <meta name="twitter:description" content="Свободная энциклопедия, которую может редактировать каждый">
-
-    <meta name="description" content="Свободная энциклопедия, которую может редактировать каждый">
-    <link rel="canonical" href="https://wikivnezakona.cc.cd/">
-
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Викивнезакона",
-        "url": "https://wikivnezakona.cc.cd/",
-        "description": "Свободная энциклопедия, которую может редактировать каждый",
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://wikivnezakona.cc.cd/search?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-        }
-    }
-    </script>
-
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -70,7 +40,16 @@
         .welcome-block { background: #fff; margin: 12px 16px; padding: 20px 16px; border: 1px solid #a2a9b1; border-radius: 2px; text-align: center; }
         .welcome-block h1 { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-weight: 400; margin: 0 0 6px 0; font-size: 24px; }
         .welcome-block .stats { font-size: 14px; color: #72777d; }
-        .welcome-block .stats-count { font-size: 16px; font-weight: 500; color: #202122; margin-top: 8px; }
+
+        /* 🔥 СТАТИСТИКА — СИНЯЯ, БОЛЬШАЯ, TIMES NEW ROMAN */
+        .welcome-block .stats-count {
+            font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif;
+            font-size: 20px;
+            font-weight: 400;
+            color: #0645ad;
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+        }
 
         .search-container { padding: 0 16px; margin-bottom: 16px; }
         .search-bar { width: 100%; padding: 10px 14px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 16px; background: #fff; outline: none; transition: border-color 0.2s; }
@@ -86,11 +65,25 @@
 
         .article-card { background: #ffffff; border: 1px solid #eaecf0; border-radius: 2px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; display: block; text-decoration: none; color: #202122; }
         .article-card:hover { background: #f8f9fa; border-color: #a2a9b1; }
+
+        .article-card .article-image {
+            max-width: 100%;
+            max-height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
         .article-card .article-title { font-size: 17px; font-weight: 500; color: #36c; margin-bottom: 4px; }
-        .article-card .article-excerpt { font-size: 14px; color: #54595d; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
-        .article-card .article-excerpt .read-more { color: #0645ad; font-weight: 500; }
+        .article-card .article-excerpt { font-size: 14px; color: #54595d; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; }
+        .article-card .article-excerpt b { font-weight: 700; color: #202122; }
+        .article-card .article-excerpt i { font-style: italic; color: #202122; }
+        .article-card .article-excerpt u { text-decoration: underline; color: #202122; }
+        .article-card .article-excerpt a { color: #0645ad; text-decoration: none; }
+        .article-card .article-excerpt a:hover { text-decoration: underline; }
+        .article-card .article-excerpt .ref { color: #0645ad; font-size: 11px; vertical-align: super; }
         .article-card .article-meta { font-size: 12px; color: #72777d; margin-top: 6px; }
-        .article-card .article-image { max-width: 100%; max-height: 120px; object-fit: cover; border-radius: 2px; margin-bottom: 8px; }
 
         .loading-text { text-align: center; padding: 40px 0; color: #72777d; font-size: 15px; }
         .empty-text { text-align: center; padding: 30px 0; color: #72777d; font-size: 15px; }
@@ -111,8 +104,10 @@
             .wiki-logo-text { font-size: 24px; }
             .welcome-block { margin: 20px 24px; padding: 30px 24px; }
             .welcome-block h1 { font-size: 32px; }
+            .welcome-block .stats-count { font-size: 22px; }
             .search-container, .add-btn-container, .articles-section { padding: 0 24px; max-width: 900px; margin-left: auto; margin-right: auto; }
             .article-card { padding: 16px 20px; }
+            .article-card .article-image { max-height: 150px; }
             .burger-menu { width: 320px; left: -320px; }
             .wiki-footer { padding: 30px 24px; }
         }
@@ -139,6 +134,7 @@
     </header>
 
     <div class="burger-overlay" id="burgerOverlay"></div>
+
     <nav class="burger-menu" id="burgerMenu">
         <button class="burger-close" id="burgerClose">✕</button>
         <div class="menu-header"><span class="logo-text">Викивнезакона</span></div>
@@ -304,53 +300,37 @@
         }
 
         // =====================================================
-        // 🔥 ФОРМАТИРОВАНИЕ ДАТЫ ДЛЯ ГЛАВНОЙ (починено)
+        // 🔥 ФОРМАТИРОВАНИЕ ТЕКСТА
         // =====================================================
-        function formatDateDisplay(timestamp) {
-            if (!timestamp) return 'Дата неизвестна';
-            try {
-                let date;
-                if (timestamp.toDate) {
-                    date = timestamp.toDate();
-                } else if (typeof timestamp === 'string') {
-                    date = new Date(timestamp);
-                } else if (typeof timestamp === 'number') {
-                    date = new Date(timestamp);
-                } else {
-                    date = new Date(timestamp);
-                }
-                return date.toDateString();
-            } catch {
-                return 'Дата неизвестна';
-            }
-        }
-
-        // Показываем только безопасные теги: **, *, __, [url], [1]
-        function stripUnsafeTags(text) {
+        function formatExcerpt(text) {
             if (!text) return '';
-            let clean = text;
-            clean = clean.replace(/\*\*(.*?)\*\*/g, '⚫$1⚫');
-            clean = clean.replace(/\*(.*?)\*/g, '⚪$1⚪');
-            clean = clean.replace(/__(.*?)__/g, '⚪$1⚪');
-            clean = clean.replace(/\[url=[^\]]+\](.*?)\[\/url\]/g, '🔗$1🔗');
-            clean = clean.replace(/\[(\d+)\]/g, '⚡$1⚡');
+            let html = escapeHtml(text);
             
-            clean = clean.replace(/\[[^\]]*\]/g, '');
-            clean = clean.replace(/===([^=]+)===/g, '$1');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
+            html = html.replace(/\[italic\](.*?)\[\/italic\]/g, '<i>$1</i>');
+            html = html.replace(/__(.*?)__/g, '<u>$1</u>');
+            html = html.replace(/\[url=([^\]]+)\](.*?)\[\/url\]/g, '<a href="$1" target="_blank">$2</a>');
+            html = html.replace(/\[url\](.*?)\[\/url\]/g, '<a href="#">$1</a>');
+            html = html.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
+            html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
             
-            clean = clean.replace(/⚫(.*?)⚫/g, '**$1**');
-            clean = clean.replace(/⚪(.*?)⚪/g, '*$1*');
-            clean = clean.replace(/🔗(.*?)🔗/g, '[url]$1[/url]');
-            clean = clean.replace(/⚡(\d+)⚡/g, '[$1]');
+            // Удаляем QA и заголовки
+            html = html.replace(/\[qa="[^"]*"\](.*?)\[\/qa\]/gs, '');
+            html = html.replace(/===([^=]+)===/g, '');
             
-            return clean;
+            return html;
         }
 
-        function getFirstImage(content) {
-            if (!content) return null;
-            const match = content.match(/\[url=([^\]]+\.(?:jpg|jpeg|png|gif|webp))\]/i) || 
-                         content.match(/https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp)/i);
-            return match ? match[1] || match[0] : null;
+        // =====================================================
+        // 🔥 ПОЛУЧЕНИЕ ИЗОБРАЖЕНИЯ ИЗ ИНФОБОКСА
+        // =====================================================
+        function getImageFromInfobox(infobox) {
+            if (!infobox) return null;
+            if (infobox.image && infobox.image.trim()) {
+                return infobox.image.trim();
+            }
+            return null;
         }
 
         function loadArticles(searchTerm = '') {
@@ -399,24 +379,49 @@
 
             let html = '';
             articles.slice(0, 20).forEach(article => {
-                let cleanContent = stripUnsafeTags(article.content || '');
-                let excerpt = cleanContent.substring(0, 120);
-                if (cleanContent.length > 120) {
-                    excerpt += '...';
+                let formattedContent = formatExcerpt(article.content || '');
+                let excerpt = formattedContent;
+                let plainText = formattedContent.replace(/<[^>]*>/g, '');
+                if (plainText.length > 120) {
+                    let cutPoint = 120;
+                    let lastSpace = plainText.lastIndexOf(' ', cutPoint);
+                    if (lastSpace > 0) cutPoint = lastSpace;
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = formattedContent;
+                    let text = tempDiv.textContent || tempDiv.innerText || '';
+                    let truncated = text.substring(0, cutPoint);
+                    let lastSpace2 = truncated.lastIndexOf(' ');
+                    if (lastSpace2 > 0) truncated = truncated.substring(0, lastSpace2);
+                    excerpt = truncated + '…';
                 }
                 
-                const imageUrl = getFirstImage(article.content || '');
+                let imageUrl = null;
+                if (article.infobox) {
+                    imageUrl = getImageFromInfobox(article.infobox);
+                }
                 
-                // 🔥 ИСПРАВЛЕНО: правильный парсинг даты
-                const date = formatDateDisplay(article.createdAt);
+                let date = 'Дата неизвестна';
+                if (article.createdAt) {
+                    try {
+                        if (article.createdAt.toDate) {
+                            date = article.createdAt.toDate().toDateString();
+                        } else if (typeof article.createdAt === 'string') {
+                            date = new Date(article.createdAt).toDateString();
+                        } else {
+                            date = new Date(article.createdAt).toDateString();
+                        }
+                    } catch {
+                        date = 'Дата неизвестна';
+                    }
+                }
                 
-                const imageHtml = imageUrl ? `<img src="${escapeHtml(imageUrl)}" class="article-image" alt="Изображение">` : '';
+                const imageHtml = imageUrl ? `<img src="${escapeHtml(imageUrl)}" class="article-image" alt="${escapeHtml(article.title)}">` : '';
                 
                 html += `
                     <a href="/article?id=${article.id}" class="article-card">
                         ${imageHtml}
                         <div class="article-title">${escapeHtml(article.title)}</div>
-                        <div class="article-excerpt">${escapeHtml(excerpt)} <span class="read-more">далее...</span></div>
+                        <div class="article-excerpt">${excerpt}</div>
                         <div class="article-meta">${escapeHtml(date)}</div>
                     </a>
                 `;
