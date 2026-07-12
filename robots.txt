@@ -2,10 +2,10 @@
 # robots.txt для Викивнезакона
 # =====================================================
 
-# Общие правила для всех ботов
+# Правила для ВСЕХ поисковых роботов и ботов
 User-agent: *
 
-# ЗАПРЕЩАЕМ служебные страницы
+# ЗАПРЕЩАЕМ индексировать только служебные страницы
 Disallow: /add.html
 Disallow: /edit.html
 Disallow: /login.html
@@ -19,38 +19,8 @@ Disallow: /article-redirect.php
 Disallow: /sitemap.php
 Disallow: /generate-sitemap.html
 
-# РАЗРЕШАЕМ всё остальное (Allow: / по умолчанию активен, если нет Disallow)
+# ЯВНО РАЗРЕШАЕМ всё остальное
 Allow: /
-
-# =====================================================
-# Googlebot — убираем Crawl-delay!
-# =====================================================
-User-agent: Googlebot
-# Перечислять заново все Disallow не нужно, они наследуются из User-agent: *
-# Если хотите управлять скоростью Googlebot, это делается только в Google Search Console
-
-# =====================================================
-# Yandex — Crawl-delay поддерживается Яндексом
-# =====================================================
-User-agent: Yandex
-Crawl-delay: 2
-
-# =====================================================
-# ЗАПРЕТ для плохих ботов (воруют контент)
-# =====================================================
-User-agent: MJ12bot
-User-agent: AhrefsBot
-User-agent: SemrushBot
-User-agent: DotBot
-User-agent: GPTBot
-User-agent: CCBot
-User-agent: PetalBot
-User-agent: Bytespider
-User-agent: Amazonbot
-User-agent: Applebot
-User-agent: Baiduspider
-User-agent: YandexBot
-Disallow: /
 
 # =====================================================
 # Карта сайта
