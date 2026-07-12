@@ -2,43 +2,57 @@
 # robots.txt для Викивнезакона
 # =====================================================
 
+# Разрешаем всем ботам сканировать сайт
 User-agent: *
 Allow: /
 
-# Запрещаем индексацию ненужных страниц
-Disallow: /add
-Disallow: /edit
-Disallow: /login
-Disallow: /reg
-Disallow: /profile
-Disallow: /admin
-Disallow: /search
-Disallow: /talk
-Disallow: /history
+# =====================================================
+# ЗАПРЕЩАЕМ служебные страницы
+# =====================================================
 
-# Разрешаем главную и статьи
+Disallow: /add.html
+Disallow: /edit.html
+Disallow: /login.html
+Disallow: /reg.html
+Disallow: /profile.html
+Disallow: /admin.html
+Disallow: /search.html
+Disallow: /talk.html
+Disallow: /history.html
+Disallow: /article-redirect.php
+Disallow: /sitemap.php
+Disallow: /generate-sitemap.html
+
+# =====================================================
+# ЯВНО РАЗРЕШАЕМ статьи и главную
+# =====================================================
+
 Allow: /
-Allow: /article
+Allow: /article.html
+Allow: /index.html
 
+# =====================================================
 # Карта сайта
+# =====================================================
+
 Sitemap: https://wikivnezakona.cc.cd/sitemap.xml
 
 # =====================================================
-# Настройка скорости обхода (Google)
+# Googlebot — помедленнее, чтобы не нагружать
 # =====================================================
 
 User-agent: Googlebot
 Crawl-delay: 1
 
 # =====================================================
-# Настройка скорости обхода (Yandex)
+# Yandex — помедленнее
 # =====================================================
 
 User-agent: Yandex
 Crawl-delay: 2
 
 # =====================================================
-# Запрет для плохих ботов
+# ЗАПРЕТ для плохих ботов (воруют контент)
 # =====================================================
 
 User-agent: MJ12bot
@@ -59,8 +73,20 @@ Disallow: /
 User-agent: CCBot
 Disallow: /
 
-# =====================================================
-# Sitemap (обновлённый)
-# =====================================================
+User-agent: PetalBot
+Disallow: /
 
-Sitemap: https://wikivnezakona.cc.cd/sitemap.xml
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Applebot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
