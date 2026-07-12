@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Викивнезакона — Статья</title>
     
-    <!-- ===== SEO МЕТА-ТЕГИ ===== -->
     <meta property="og:title" content="Викивнезакона">
     <meta property="og:description" content="Свободная энциклопедия, которую может редактировать каждый">
     <meta property="og:url" content="https://wikivnezakona.cc.cd/">
@@ -86,7 +85,6 @@
         .history-btn:hover { background: #eaecf0; }
         .history-btn img { width: 18px; height: 18px; filter: invert(0.4); }
 
-        /* ===== ОСНОВНОЙ БЛОК С ПЕРЕНОСОМ ===== */
         .article-body {
             background: #ffffff;
             padding: 20px 24px;
@@ -101,20 +99,8 @@
             flex: 1;
             max-width: 100%;
         }
-        .article-body p {
-            margin-bottom: 12px;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            word-break: break-word;
-        }
-        .article-body a {
-            color: #0645ad;
-            text-decoration: none;
-            cursor: pointer;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            word-break: break-word;
-        }
+        .article-body p { margin-bottom: 12px; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
+        .article-body a { color: #0645ad; text-decoration: none; cursor: pointer; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
         .article-body a:hover { text-decoration: underline; }
         .article-body .ref { color: #0645ad; font-size: 13px; vertical-align: super; cursor: pointer; text-decoration: none; }
         .article-body .ref:hover { text-decoration: underline; }
@@ -155,15 +141,7 @@
             word-wrap: break-word;
             word-break: break-word;
         }
-        .article-body .wiki-branch .branch-toggle .arrow-icon {
-            width: 12px;
-            height: 12px;
-            margin-right: 15px;
-            opacity: 0.6;
-            transition: transform 0.2s ease-in-out;
-            transform: rotate(0deg);
-            flex-shrink: 0;
-        }
+        .article-body .wiki-branch .branch-toggle .arrow-icon { width: 12px; height: 12px; margin-right: 15px; opacity: 0.6; transition: transform 0.2s ease-in-out; transform: rotate(0deg); flex-shrink: 0; }
         .article-body .wiki-branch .branch-toggle .arrow-icon.closed { transform: rotate(0deg); }
         .article-body .wiki-branch .branch-toggle .arrow-icon.open { transform: rotate(180deg); }
         .article-body .wiki-branch .branch-body {
@@ -254,7 +232,6 @@
         .loading-text { text-align: center; padding: 40px 0; color: #72777d; font-size: 15px; }
         .error-text { text-align: center; padding: 40px 0; color: #d33; font-size: 15px; }
 
-        /* ===== МОДАЛЬНОЕ ОКНО ИСТОРИИ ===== */
         .history-modal {
             display: none;
             position: fixed;
@@ -386,7 +363,6 @@
         <div class="menu-footer"><a href="#">Описание</a> • <a href="#">Отказ от ответственности</a><br><span style="font-size: 11px;">© Викивнезакона</span></div>
     </nav>
 
-    <!-- Модальное окно истории -->
     <div class="history-modal" id="historyModal">
         <div class="modal-content">
             <button class="modal-close" id="historyModalClose">&times;</button>
@@ -842,7 +818,7 @@
         }
 
         // =====================================================
-        // 🔥 ИСТОРИЯ ИЗМЕНЕНИЙ (из массива внутри статьи)
+        // ИСТОРИЯ ИЗМЕНЕНИЙ (из массива внутри статьи)
         // =====================================================
         async function loadHistory(articleId) {
             historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';

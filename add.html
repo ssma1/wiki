@@ -59,15 +59,9 @@
         .form-group label .required { color: #d33; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 15px; font-family: inherit; transition: border-color 0.2s; background: #fff; }
         .form-group input:focus, .form-group textarea:focus { border-color: #36c; box-shadow: 0 0 0 1px #36c; outline: none; }
-        .form-group textarea { min-height: 200px; resize: vertical; line-height: 1.7; }
+        .form-group textarea { min-height: 200px; resize: vertical; line-height: 1.7; word-break: break-word; overflow-wrap: break-word; }
         .form-group .hint { font-size: 13px; color: #72777d; margin-top: 4px; line-height: 1.6; }
         .form-group .hint code { background: #f0f0f0; padding: 1px 6px; border-radius: 2px; font-size: 12px; font-family: monospace; }
-
-        /* 🔥 ДЛЯ ТЕКСТА БЕЗ ПРОБЕЛОВ */
-        .form-group textarea, .preview-content, .article-body {
-            word-break: break-word;
-            overflow-wrap: break-word;
-        }
 
         .editor-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 10px; background: #f8f9fa; border: 1px solid #a2a9b1; border-bottom: none; border-radius: 2px 2px 0 0; }
         .editor-toolbar button { padding: 4px 10px; background: #fff; border: 1px solid #a2a9b1; border-radius: 2px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all 0.15s; color: #202122; display: inline-flex; align-items: center; gap: 4px; }
@@ -83,7 +77,7 @@
         .infobox-builder .infobox-sub .form-group { margin-bottom: 0; }
         .infobox-builder .infobox-sub .form-group label { font-size: 13px; font-weight: 500; }
         .infobox-field { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-        .infobox-field input { flex: 1; padding: 6px 10px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 14px; min-width: 80px; }
+        .infobox-field input { flex: 1; padding: 6px 10px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 14px; min-width: 80px; word-break: break-word; overflow-wrap: break-word; }
         .infobox-field .remove-field { background: #d33; color: #fff; border: none; border-radius: 2px; padding: 4px 10px; cursor: pointer; font-size: 14px; transition: background 0.15s; }
         .infobox-field .remove-field:hover { background: #b22222; }
         .infobox-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -105,7 +99,7 @@
         .branch-item .branch-header input { flex: 1; padding: 6px 10px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 16px; font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-weight: 400; }
         .branch-item .branch-header .remove-branch { background: #d33; color: #fff; border: none; border-radius: 2px; padding: 4px 10px; cursor: pointer; font-size: 13px; transition: background 0.15s; }
         .branch-item .branch-header .remove-branch:hover { background: #b22222; }
-        .branch-item textarea { width: 100%; padding: 8px 10px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 60px; transition: border-color 0.2s; }
+        .branch-item textarea { width: 100%; padding: 8px 10px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 60px; transition: border-color 0.2s; word-break: break-word; overflow-wrap: break-word; }
         .branch-item textarea:focus { border-color: #36c; box-shadow: 0 0 0 1px #36c; outline: none; }
         .branches-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .branches-actions button { padding: 6px 14px; border: 1px solid #a2a9b1; border-radius: 2px; background: #fff; cursor: pointer; font-size: 13px; transition: background 0.15s; font-family: inherit; }
@@ -115,21 +109,23 @@
         .preview-section { background: #fff; border: 1px solid #eaecf0; border-radius: 2px; padding: 16px; margin-bottom: 20px; }
         .preview-section .preview-title { font-weight: 600; margin-bottom: 8px; font-size: 15px; color: #54595d; }
         .preview-content { font-size: 14px; line-height: 1.7; padding: 16px; background: #f8f9fa; border-radius: 2px; min-height: 80px; overflow-wrap: break-word; word-break: break-word; }
-        .preview-content p { margin-bottom: 10px; }
+        .preview-content p { margin-bottom: 10px; word-break: break-word; overflow-wrap: break-word; }
         .preview-content .ref { color: #0645ad; font-size: 12px; vertical-align: super; }
         .preview-content b { font-weight: 700; }
         .preview-content i { font-style: italic; }
 
-        .preview-content .preview-infobox { float: right; width: 260px; margin: 0 0 12px 16px; background: #f8f9fa; border: 1px solid #a2a9b1; font-size: 13px; padding: 0; border-collapse: collapse; }
-        .preview-content .preview-infobox .preview-infobox-title { font-weight: 600; text-align: center; padding: 6px 10px; font-size: 15px; }
+        .preview-content .preview-infobox { float: right; width: 260px; margin: 0 0 12px 16px; background: #f8f9fa; border: 1px solid #a2a9b1; font-size: 13px; padding: 0; border-collapse: collapse; word-break: break-word; overflow-wrap: break-word; }
+        .preview-content .preview-infobox .preview-infobox-title { font-weight: 600; text-align: center; padding: 6px 10px; font-size: 15px; word-break: break-word; overflow-wrap: break-word; }
         .preview-content .preview-infobox .preview-infobox-img { display: block; max-width: 100%; max-height: 150px; margin: 4px auto; }
-        .preview-content .preview-infobox .preview-infobox-row { display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #eaecf0; }
+        .preview-content .preview-infobox .preview-infobox-row { display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid #eaecf0; word-break: break-word; overflow-wrap: break-word; }
         .preview-content .preview-infobox .preview-infobox-row .key { font-weight: 700; background: none; padding: 2px 6px; border-radius: 0; }
         .preview-content .preview-infobox .preview-infobox-row:last-child { border-bottom: none; }
 
         .preview-branch {
             border-bottom: 1px solid #c8ccd1;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
         .preview-branch .branch-toggle {
             display: flex;
@@ -141,6 +137,8 @@
             font-weight: 400;
             color: #202122;
             user-select: none;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
         .preview-branch .branch-toggle .arrow-icon {
             width: 12px;
@@ -149,13 +147,10 @@
             opacity: 0.6;
             transition: transform 0.2s ease-in-out;
             transform: rotate(0deg);
+            flex-shrink: 0;
         }
-        .preview-branch .branch-toggle .arrow-icon.closed {
-            transform: rotate(0deg);
-        }
-        .preview-branch .branch-toggle .arrow-icon.open {
-            transform: rotate(180deg);
-        }
+        .preview-branch .branch-toggle .arrow-icon.closed { transform: rotate(0deg); }
+        .preview-branch .branch-toggle .arrow-icon.open { transform: rotate(180deg); }
         .preview-branch .branch-body {
             display: none;
             padding: 0 15px 15px 42px;
@@ -163,16 +158,18 @@
             line-height: 1.6;
             color: #202122;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .preview-content .wiki-link {
             color: #0645ad;
             text-decoration: none;
             cursor: pointer;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
-        .preview-content .wiki-link:hover {
-            text-decoration: underline;
-        }
+        .preview-content .wiki-link:hover { text-decoration: underline; }
 
         .help-section {
             background: #f8f9fa;
@@ -364,7 +361,7 @@
             } else { 
                 isEditMode = false; 
                 editArticleId = null; 
-                canChangeTitle = true; // При создании всегда можно менять название
+                canChangeTitle = true;
                 renderForm(null, titleParam); 
             }
         }
@@ -383,7 +380,6 @@
                 const data = doc.data();
                 existingArticleData = data;
                 
-                // Если canChangeTitle не был передан из article.html, определяем сами
                 const isAuthor = currentUser && data.authorId === currentUser.uid;
                 const isAdmin = currentUserRole === 'admin';
                 if (!canChangeTitle) {
@@ -406,7 +402,6 @@
             const infobox = existingData?.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' };
             const branches = existingData?.branches || [];
 
-            // 🔥 ОПРЕДЕЛЯЕМ МОЖЕТ ЛИ ПОЛЬЗОВАТЕЛЬ МЕНЯТЬ НАЗВАНИЕ
             const isAuthor = currentUser && existingData && existingData.authorId === currentUser.uid;
             const isAdmin = currentUserRole === 'admin';
             const canEditTitle = canChangeTitle || isAuthor || isAdmin || !isEditMode;
@@ -415,14 +410,14 @@
                 <h1 class="form-title">${isEditMode ? 'Редактирование статьи' : 'Создание новой статьи'}</h1>
                 <div class="form-status" id="formStatus"></div>
                 <form id="articleForm">
-                    <!-- 🔥 ПОЛЕ НАЗВАНИЯ — ВИДНО ТОЛЬКО АВТОРУ ИЛИ АДМИНУ -->
+                    <!-- ПОЛЕ НАЗВАНИЯ — ВИДНО ТОЛЬКО АВТОРУ ИЛИ АДМИНУ -->
                     <div class="form-group" id="titleGroup" style="${canEditTitle ? '' : 'display:none;'}">
                         <label>Название статьи <span class="required">*</span></label>
                         <input type="text" id="articleTitle" value="${escapeHtml(title)}" placeholder="Введите название статьи" required>
                         ${isEditMode ? `<span style="font-size:12px;color:#2a8;display:block;margin-top:4px;">✅ Вы можете изменить название</span>` : ''}
                     </div>
                     
-                    <!-- 🔥 ЗАГЛУШКА ДЛЯ ЧУЖИХ (название видно но не редактируется) -->
+                    <!-- ЗАГЛУШКА ДЛЯ ЧУЖИХ -->
                     ${!canEditTitle && isEditMode ? `
                         <div class="form-group" style="opacity:0.6;background:#f5f5f5;padding:10px 12px;border-radius:4px;margin-bottom:20px;">
                             <label style="font-weight:600;font-size:15px;color:#72777d;">Название статьи (только для чтения)</label>
@@ -682,7 +677,7 @@
                 preview.innerHTML = previewHtml + infoboxPreview + afterHtml + branchesHtml || '<span style="color:#72777d;">Предпросмотр будет здесь...</span>';
             }
 
-            titleInput?.addEventListener('input', updatePreview);
+            if (titleInput) titleInput.addEventListener('input', updatePreview);
             contentInput.addEventListener('input', updatePreview);
             afterInput.addEventListener('input', updatePreview);
             document.querySelectorAll('#infoboxFields input').forEach(inp => inp.addEventListener('input', updatePreview));
@@ -696,7 +691,7 @@
             if (isEditMode) document.getElementById('deleteBtn')?.addEventListener('click', () => { if (confirm('Удалить статью?')) deleteArticle(); });
         }
 
-        // ===== СОХРАНЕНИЕ В ИСТОРИЮ (с serverTimestamp) =====
+        // ===== СОХРАНЕНИЕ В ИСТОРИЮ =====
         function saveToHistory(articleId, data, action, userId, username) {
             return db.collection('articleHistory').add({
                 articleId: articleId,
@@ -714,6 +709,7 @@
             }).catch(err => console.error('Ошибка сохранения истории:', err));
         }
 
+        // ===== ОСНОВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ =====
         function saveArticle() {
             const status = document.getElementById('formStatus'); 
             status.className = 'form-status'; 
@@ -724,17 +720,14 @@
                 return; 
             }
             
-            // Определяем, есть ли поле title (может быть скрыто)
             const titleInput = document.getElementById('articleTitle');
             const title = titleInput ? titleInput.value.trim() : (existingArticleData?.title || '');
-            
             const content = document.getElementById('articleContent').value.trim();
             
             if (!title) { 
                 showStatus('❌ Введите название статьи', 'error'); 
                 return; 
             }
-            
             if (!content) { 
                 showStatus('❌ Введите содержание статьи', 'error'); 
                 return; 
@@ -764,12 +757,10 @@
                 branches
             };
 
+            // 🔥 РЕДАКТИРОВАНИЕ
             if (isEditMode && editArticleId) {
-                const isAuthor = existingArticleData && existingArticleData.authorId === currentUser.uid;
-                const isAdminUser = currentUserRole === 'admin';
-                const canEditTitle = isAuthor || isAdminUser;
-                
                 const updateData = {
+                    title: articleData.title,
                     content: articleData.content,
                     afterContent: articleData.afterContent,
                     infobox: articleData.infobox,
@@ -777,15 +768,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                if (canEditTitle) {
-                    updateData.title = articleData.title;
-                } else if (existingArticleData) {
-                    updateData.title = existingArticleData.title;
-                }
-                
-                if (existingArticleData && !existingArticleData.authorId) {
-                    updateData.authorId = currentUser.uid;
-                }
+                console.log('📝 Обновление статьи:', { id: editArticleId, updateData });
                 
                 db.collection('articles').doc(editArticleId).update(updateData)
                     .then(() => {
@@ -806,7 +789,9 @@
                         console.error('❌ Ошибка сохранения:', err);
                         showStatus('❌ Ошибка: ' + err.message, 'error');
                     });
-            } else {
+            } 
+            // 🔥 СОЗДАНИЕ НОВОЙ СТАТЬИ
+            else {
                 const newRef = db.collection('articles').doc();
                 const newArticleData = {
                     ...articleData,
@@ -815,6 +800,8 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
+                
+                console.log('📝 Создание новой статьи:', { id: newRef.id, newArticleData });
                 
                 newRef.set(newArticleData)
                     .then(() => {
