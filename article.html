@@ -205,7 +205,7 @@
             word-break: break-word;
         }
 
-        /* ===== ИНФОБОКС — С ОТСТУПАМИ И РАЗРЫВАМИ (как в add.html) ===== */
+        /* ===== ИНФОБОКС — ИСПРАВЛЕННЫЙ ===== */
         .infobox {
             float: right;
             width: 280px;
@@ -229,15 +229,14 @@
             overflow-wrap: break-word;
             word-wrap: break-word;
             word-break: break-word;
-            border-bottom: 1px solid #a2a9b1;
         }
-        .infobox-image-container { text-align: center; padding: 8px; background: #fff; border-bottom: 1px solid #eaecf0; }
+        .infobox-image-container { text-align: center; padding: 8px; background: #fff; }
         .infobox-main-img { max-width: 100%; max-height: 200px; height: auto; }
         .infobox-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .infobox-table tr { border-bottom: 1px solid #eaecf0; }
         .infobox-table tr:last-child { border-bottom: none; }
         .infobox-table th {
-            padding: 6px 10px;
+            padding: 8px 10px;
             text-align: left;
             font-weight: 700;
             width: 40%;
@@ -247,10 +246,10 @@
             word-wrap: break-word;
             word-break: break-word;
             vertical-align: top;
-            background: #f0f0f0;
+            background: none;
         }
         .infobox-table td {
-            padding: 6px 10px;
+            padding: 8px 10px;
             font-size: 13px;
             border: none;
             overflow-wrap: break-word;
@@ -261,6 +260,9 @@
         }
         .infobox-table a { color: #0645ad; text-decoration: none; }
         .infobox-table a:hover { text-decoration: underline; }
+        .infobox-table th b, .infobox-table td b { font-weight: 700; }
+        .infobox-table th i, .infobox-table td i { font-style: italic; }
+        .infobox-table th u, .infobox-table td u { text-decoration: underline; }
 
         .article-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .delete-btn { background: #d33; color: #fff; border: none; padding: 6px 14px; border-radius: 2px; cursor: pointer; font-size: 13px; transition: background 0.15s; font-family: inherit; }
@@ -588,13 +590,13 @@
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
         // =====================================================
-        // parseTags — ИСПРАВЛЕННЫЙ: цвет, жирный, курсив, ссылки, сноски, заголовки, QA, изображения
+        // parseTags — ИСПРАВЛЕННЫЙ: цвет + жирный/курсив/подчеркнутый
         // =====================================================
         function parseTags(text) {
             if (!text) return '';
             let html = escapeHtml(text);
             
-            // Жирный — сначала обрабатываем **, чтобы не конфликтовать с цветом
+            // Жирный
             html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
             // Курсив
             html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
@@ -602,11 +604,11 @@
             // Подчеркнутый
             html = html.replace(/__(.*?)__/g, '<u>$1</u>');
             
-            // ЦВЕТ — теперь работает правильно с **внутри**
+            // ЦВЕТ — ИСПРАВЛЕНО! Рекурсивный парсинг для поддержки **жирного** и *курсива* внутри
             html = html.replace(/\[color\s*=\s*([^\]]+)\](.*?)\[\/color\]/gs, (match, color, content) => {
                 let colorHex = color.trim();
                 const colorMap = {
-                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00cc00',
                     'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
                     'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
                     'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
@@ -614,7 +616,7 @@
                 if (colorMap[color.toLowerCase()]) {
                     colorHex = colorMap[color.toLowerCase()];
                 }
-                // Рекурсивно парсим содержимое — так **внутри цвета тоже работает**
+                // Рекурсивно парсим содержимое (чтобы внутри были жирный/курсив)
                 const parsedContent = parseTags(content);
                 return `<span style="color:${colorHex};">${parsedContent}</span>`;
             });
@@ -624,7 +626,7 @@
             // Сноски
             html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
             
-            // === Изображения ===
+            // Изображения
             html = html.replace(/\[img\s*(?:size=([^\s\]]+))?\s*(?:align=([^\s\]]+))?\s*(?:link=([^\s\]]+))?\](.*?)\[\/img\]/g, (match, size, align, link, url) => {
                 let sizeClass = '';
                 if (size === 'small') sizeClass = ' article-image-small';
@@ -644,14 +646,14 @@
             
             html = html.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" class="article-image article-image-center" alt="Изображение">');
             
-            // === Заголовки ===
+            // Заголовки
             html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
             
-            // === QA блоки ===
+            // QA блоки
             html = html.replace(/\[qa-color=([^\]:]+):([^\]]*)\](.*?)\[\/qa-color\]/gs, (match, color, title, content) => {
                 let colorHex = color.trim();
                 const colorMap = {
-                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00cc00',
                     'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
                     'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
                     'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
@@ -673,7 +675,7 @@
             html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
                 let colorHex = color.trim();
                 const colorMap = {
-                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00cc00',
                     'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
                     'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
                     'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
@@ -688,7 +690,6 @@
             return html;
         }
 
-        // ===== ПОСТРОЕНИЕ ИНФОБОКСА С ОТСТУПАМИ (как в add.html) =====
         function buildInfobox(data) {
             let rows = '';
             if (data.fields) {
