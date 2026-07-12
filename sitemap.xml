@@ -1,0 +1,62 @@
+<?php
+// sitemap.php — динамическая генерация sitemap.xml
+
+// Подключаем Firebase
+require_once 'vendor/autoload.php';
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\ServiceAccount;
+
+$serviceAccount = ServiceAccount::fromJsonFile(__DIR__.'/serviceAccountKey.json');
+$firebase = (new Factory)
+    ->withServiceAccount($serviceAccount)
+    ->withDatabaseUri('https://sosial2-440f4-default-rtdb.firebaseio.com')
+    ->create();
+
+$db = $firebase->getFirestore();
+
+// Получаем все статьи
+$articles = $db->collection('articles')->documents();
+
+// Заголовки для XML
+header('Content-Type: application/xml; charset=utf-8');
+
+echo '<?xml version="1.0" encoding="UTF-8"?>';
+echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+// Главная страница
+echo '
+    <url>
+        <loc>https://wikivnezakona.cc.cd/</loc>
+        <lastmod>'.date('Y-m-d').'</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+';
+
+// Все статьи
+foreach ($articles as $article) {
+    $data = $article->data();
+    $id = $article->id();
+    $lastmod = date('Y-m-d');
+    
+    echo '
+    <url>
+        <loc>https://wikivnezakona.cc.cd/article?id='.$id.'</loc>
+        <lastmod>'.$lastmod.'</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    ';
+}
+
+// Поиск
+echo '
+    <url>
+        <loc>https://wikivnezakona.cc.cd/search</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+';
+
+echo '</urlset>';
+?>
