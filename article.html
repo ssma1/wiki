@@ -79,7 +79,7 @@
         .share-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         .share-btn:hover { background: #eaecf0; }
 
-        /* 🔥 ИКОНКА КАРАНДАША ИЗ ВИКИПЕДИИ */
+        /* ИКОНКА РЕДАКТИРОВАНИЯ (карандаш) */
         .edit-btn {
             display: inline-flex;
             align-items: center;
@@ -97,18 +97,23 @@
         .edit-btn:hover { background: #eaecf0; }
         .edit-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         
+        /* ЗАМЕНА: вместо круга с замком — иконка "закрытого редактирования" из википедии */
         .edit-btn .lock-overlay {
             position: absolute;
             bottom: -2px;
-            right: -4px;
-            background: #ffffff;
-            border-radius: 50%;
-            padding: 2px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+            right: -6px;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            width: auto;
+            height: auto;
+        }
+        .edit-btn .lock-overlay img {
             width: 14px;
             height: 14px;
+            filter: invert(0.4);
         }
-        .edit-btn .lock-overlay img { width: 12px; height: 12px; filter: none; }
         
         .edit-btn.protected {
             cursor: not-allowed;
@@ -134,7 +139,15 @@
             flex: 1;
             max-width: 100%;
         }
-        .article-body p { margin-bottom: 12px; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
+        .article-body p { 
+            margin-bottom: 12px; 
+            overflow-wrap: break-word; 
+            word-wrap: break-word; 
+            word-break: break-word;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .article-body p:last-child { border-bottom: none; }
         .article-body a { color: #0645ad; text-decoration: none; cursor: pointer; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
         .article-body a:hover { text-decoration: underline; }
         .article-body .ref { color: #0645ad; font-size: 13px; vertical-align: super; cursor: pointer; text-decoration: none; }
@@ -194,7 +207,7 @@
             word-break: break-word;
         }
 
-        /* ===== ИНФОБОКС — ИСПРАВЛЕННЫЙ ===== */
+        /* ===== ИНФОБОКС ===== */
         .infobox {
             float: right;
             width: 280px;
@@ -348,7 +361,6 @@
         .history-item .history-restore:hover { background: #2a4b8d; }
         .history-empty { text-align: center; color: #72777d; padding: 30px 0; }
 
-        /* Стили для изображений в статье */
         .article-body .article-image {
             max-width: 100%;
             height: auto;
@@ -577,7 +589,7 @@
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
         // =====================================================
-        // parseTags — ВСЕ ТЕГИ РАБОТАЮТ
+        // parseTags — ИСПРАВЛЕННЫЙ: цвет, жирный, курсив, ссылки, сноски, заголовки, QA, изображения
         // =====================================================
         function parseTags(text) {
             if (!text) return '';
@@ -590,9 +602,26 @@
             html = html.replace(/\[italic\](.*?)\[\/italic\]/g, '<i>$1</i>');
             // Подчеркнутый
             html = html.replace(/__(.*?)__/g, '<u>$1</u>');
-            // Цвет            html = html.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
+            
+            // ЦВЕТ — ИСПРАВЛЕНО!
+            html = html.replace(/\[color\s*=\s*([^\]]+)\](.*?)\[\/color\]/gs, (match, color, content) => {
+                let colorHex = color.trim();
+                const colorMap = {
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
+                    'pink': '#ff69b4', 'cyan': '#00ffff', 'magenta': '#ff00ff',
+                    'white': '#ffffff', 'black': '#000000', 'gray': '#808080', 'grey': '#808080'
+                };
+                if (colorMap[color.toLowerCase()]) {
+                    colorHex = colorMap[color.toLowerCase()];
+                }
+                // Рекурсивно парсим содержимое (чтобы внутри были жирный/курсив и т.д.)
+                const parsedContent = parseTags(content);
+                return `<span style="color:${colorHex};">${parsedContent}</span>`;
+            });
+            
             // Ссылки
-            html = html.replace(/\[url=([^\]]+)\](.*?)\[\/url\]/g, '<a href="$1" target="_blank">$2</a>');
+            html = html.replace(/\[url\s*=\s*([^\]]+)\](.*?)\[\/url\]/g, '<a href="$1" target="_blank">$2</a>');
             // Сноски
             html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
             
@@ -620,9 +649,8 @@
             html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
             
             // === QA блоки ===
-            // Цветной QA с заголовком: [qa-color=red:вопрос]ответ[/qa-color]
             html = html.replace(/\[qa-color=([^\]:]+):([^\]]*)\](.*?)\[\/qa-color\]/gs, (match, color, title, content) => {
-                let colorHex = color;
+                let colorHex = color.trim();
                 const colorMap = {
                     'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
                     'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
@@ -637,16 +665,14 @@
                 return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;"><strong>${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
             });
             
-            // Обычный QA с заголовком
             html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
                 const cleanTitle = title || 'Вопрос-Ответ';
                 const processedContent = parseTags(content);
                 return `<div class="qa-block"><strong class="qa-title">${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
             });
             
-            // Цветной QA без заголовка
             html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
-                let colorHex = color;
+                let colorHex = color.trim();
                 const colorMap = {
                     'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
                     'yellow': '#ffff00', 'orange': '#ff8c00', 'purple': '#800080',
@@ -786,20 +812,16 @@
         }
 
         // =====================================================
-        // ИСТОРИЯ ИЗМЕНЕНИЙ (из отдельной коллекции)
+        // ИСТОРИЯ ИЗМЕНЕНИЙ
         // =====================================================
         async function loadHistory(articleId) {
             historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
             try {
-                console.log('📜 Загрузка истории для статьи:', articleId);
-                
                 const historySnapshot = await db.collection('articleHistory')
                     .where('articleId', '==', articleId)
                     .orderBy('timestamp', 'desc')
                     .limit(100)
                     .get();
-
-                console.log('📊 Найдено записей:', historySnapshot.size);
 
                 let historyItems = [];
                 historySnapshot.forEach(doc => {
@@ -899,7 +921,9 @@
             const canDelete = isAuthor || isAdmin;
             const canSeeHistory = isAuthor || isAdmin;
 
+            // Парсим основной контент (цвета и всё остальное уже работают)
             let mainText = parseTags(data.content || '');
+            // Разбиваем на абзацы с разделителями-полосками
             mainText = mainText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
 
             let infoboxHtml = '';
@@ -940,7 +964,6 @@
 
             const shareUrl = window.location.href;
 
-            // 🔥 ИКОНКИ ИЗ ВИКИПЕДИИ
             let toolsRightHtml = `
                 <div class="tool-item">
                     <a href="#"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/language.svg" alt="Язык"></a>
@@ -960,14 +983,14 @@
                     </div>
                 `;
             } 
-            // Карандаш с замком (защищённая статья)
+            // Карандаш с замком (защищённая статья) — ИКОНКА ЗАМЕНЕНА НА СПЕЦИАЛЬНУЮ ИЗ ВИКИМЕДИА
             else if (isProtected && currentUser) {
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="#" class="edit-btn protected" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать" style="opacity:0.6;">
                             <span class="lock-overlay">
-                                <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/lock.svg" alt="Замок" style="width:12px;height:12px;">
+                                <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/unLock.svg" alt="Замок" style="width:14px;height:14px;filter:invert(0.4);">
                             </span>
                         </a>
                     </div>
@@ -997,7 +1020,7 @@
 
             container.innerHTML = `
                 <div class="article-header">
-                    <h1 class="page-title">${escapeHtml(data.title)}</h1>
+                    <h1 class="page-title">${parseTags(data.title)}</h1>
                     ${deleteHtml}
                 </div>
 
