@@ -557,6 +557,8 @@
             try {
                 if (timestamp.toDate) {
                     return timestamp.toDate().toDateString();
+                } else if (typeof timestamp === 'string') {
+                    return new Date(timestamp).toDateString();
                 } else {
                     return new Date(timestamp).toDateString();
                 }
@@ -570,6 +572,8 @@
             try {
                 if (timestamp.toDate) {
                     return timestamp.toDate().toLocaleString();
+                } else if (typeof timestamp === 'string') {
+                    return new Date(timestamp).toLocaleString();
                 } else {
                     return new Date(timestamp).toLocaleString();
                 }
@@ -579,7 +583,7 @@
         }
 
         // =====================================================
-        // 🔥 ОБНОВЛЕНИЕ МЕТА-ТЕГОВ (ИСПРАВЛЕННОЕ)
+        // 🔥 ОБНОВЛЕНИЕ МЕТА-ТЕГОВ
         // =====================================================
         function updateMetaTags(data) {
             const articleTitle = data.title || 'Без названия';
@@ -625,14 +629,27 @@
             console.log('✅ Мета-теги обновлены:', fullTitle);
         }
 
+        // =====================================================
+        // ОСНОВНАЯ ФУНКЦИЯ РЕНДЕРИНГА
+        // =====================================================
         function renderArticle(data) {
+            // 🔥 Обновляем мета-теги
             updateMetaTags(data);
 
             const isAdmin = currentUserRole === 'admin';
             const isAuthor = currentUser && data.authorId === currentUser.uid;
+            
+            // 🔥 ЛЮБОЙ залогиненный пользователь может редактировать
             const canEdit = !!currentUser;
+            
+            // 🔥 Историю видят ТОЛЬКО автор и админ
             const canSeeHistory = isAuthor || isAdmin;
-            const canDelete = isAdmin || isAuthor;
+            
+            // 🔥 Удалять могут ТОЛЬКО автор и админ
+            const canDelete = isAuthor || isAdmin;
+            
+            // 🔥 Изменять название могут ТОЛЬКО автор и админ
+            const canChangeTitle = isAuthor || isAdmin;
 
             let mainText = parseTags(data.content || '');
             mainText = mainText.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
@@ -669,6 +686,7 @@
 
             const date = formatDate(data.createdAt);
 
+            // 🔥 Кнопка удаления — только для автора и админа
             let deleteHtml = '';
             if (canDelete) {
                 deleteHtml = `<button class="delete-btn" id="deleteArticleBtn">Удалить</button>`;
@@ -685,6 +703,7 @@
                 </div>
             `;
 
+            // 🔥 Кнопка редактирования — для ВСЕХ залогиненных пользователей
             if (canEdit) {
                 toolsRightHtml += `
                     <div class="tool-item">
@@ -703,6 +722,7 @@
                 `;
             }
 
+            // 🔥 Кнопка истории — только для автора и админа
             if (canSeeHistory) {
                 toolsRightHtml += `
                     <div class="tool-item">
@@ -848,17 +868,25 @@
         }
 
         // =====================================================
-        // ВОССТАНОВЛЕНИЕ ВЕРСИИ
+        // ВОССТАНОВЛЕНИЕ ВЕРСИИ (только автор или админ)
         // =====================================================
         async function restoreVersion(articleId, index) {
+            // 🔥 Проверка прав — только автор или админ могут восстанавливать
+            const doc = await db.collection('articles').doc(articleId).get();
+            if (!doc.exists) {
+                alert('Статья не найдена');
+                return;
+            }
+            const data = doc.data();
+            const isAuthor = currentUser && data.authorId === currentUser.uid;
+            const isAdmin = currentUserRole === 'admin';
+            
+            if (!isAuthor && !isAdmin) {
+                alert('Только автор или администратор могут восстанавливать версии');
+                return;
+            }
+
             try {
-                const doc = await db.collection('articles').doc(articleId).get();
-                if (!doc.exists) {
-                    alert('Статья не найдена');
-                    return;
-                }
-                
-                const data = doc.data();
                 const history = data.history || [];
                 
                 if (index >= history.length) {
@@ -906,6 +934,9 @@
             }
         }
 
+        // =====================================================
+        // УДАЛЕНИЕ СТАТЬИ (только автор или админ)
+        // =====================================================
         function deleteArticle(articleId, data) {
             if (!currentUser || (currentUserRole !== 'admin' && data.authorId !== currentUser.uid)) {
                 alert('Только администраторы и автор могут удалять статьи');
