@@ -1,28 +1,4 @@
-# =====================================================
-# robots.txt для Викивнезакона
-# =====================================================
-
-# Правила для ВСЕХ поисковых роботов и ботов
 User-agent: *
-
-# ЗАПРЕЩАЕМ индексировать только служебные страницы
-Disallow: /add.html
-Disallow: /edit.html
-Disallow: /login.html
-Disallow: /reg.html
-Disallow: /profile.html
-Disallow: /admin.html
-Disallow: /search.html
-Disallow: /talk.html
-Disallow: /history.html
-Disallow: /article-redirect.php
-Disallow: /sitemap.php
-Disallow: /generate-sitemap.html
-
-# ЯВНО РАЗРЕШАЕМ всё остальное
 Allow: /
 
-# =====================================================
-# Карта сайта
-# =====================================================
 Sitemap: https://wikivnezakona.cc.cd/sitemap.xml
