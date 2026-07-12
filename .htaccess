@@ -1,3 +1,4 @@
+
 RewriteEngine On
 
 # =====================================================
@@ -73,6 +74,9 @@ ErrorDocument 404 /404.html
     Order allow,deny
     Deny from all
 </FilesMatch>
+
+# Sitemap (редирект .xml на .php)
+RewriteRule ^sitemap\.xml$ /sitemap.php [L]
 
 # =====================================================
 # 9. ЗАПРЕТ ЛИСТИНГА ДИРЕКТОРИЙ
