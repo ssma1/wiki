@@ -19,6 +19,9 @@
     <meta name="description" content="Свободная энциклопедия, которую может редактировать каждый">
     <link rel="canonical" href="https://wikivnezakona.cc.cd/">
 
+    <link rel="icon" type="image/png" href="https://wikivnezakona.cc.cd/logo.png">
+    <link rel="shortcut icon" href="https://wikivnezakona.cc.cd/logo.png">
+
     <script type="application/ld+json" id="jsonLd">
     {
         "@context": "https://schema.org",
@@ -79,7 +82,6 @@
         .share-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         .share-btn:hover { background: #eaecf0; }
 
-        /* ИКОНКА РЕДАКТИРОВАНИЯ (карандаш) */
         .edit-btn {
             display: inline-flex;
             align-items: center;
@@ -97,7 +99,7 @@
         .edit-btn:hover { background: #eaecf0; }
         .edit-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         
-        /* ЗАМЕНА: вместо круга с замком — иконка "закрытого редактирования" из википедии */
+        /* ЗАКРЫТЫЙ ЗАМОК (исправлено) */
         .edit-btn .lock-overlay {
             position: absolute;
             bottom: -2px;
@@ -144,10 +146,7 @@
             overflow-wrap: break-word; 
             word-wrap: break-word; 
             word-break: break-word;
-            padding: 4px 0;
-            border-bottom: 1px solid #f0f0f0;
         }
-        .article-body p:last-child { border-bottom: none; }
         .article-body a { color: #0645ad; text-decoration: none; cursor: pointer; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
         .article-body a:hover { text-decoration: underline; }
         .article-body .ref { color: #0645ad; font-size: 13px; vertical-align: super; cursor: pointer; text-decoration: none; }
@@ -207,7 +206,7 @@
             word-break: break-word;
         }
 
-        /* ===== ИНФОБОКС ===== */
+        /* ===== ИНФОБОКС — ТОЛЬКО ЗДЕСЬ ПОЛОСКИ И ОТСТУПЫ ===== */
         .infobox {
             float: right;
             width: 280px;
@@ -231,12 +230,14 @@
             overflow-wrap: break-word;
             word-wrap: break-word;
             word-break: break-word;
+            border-bottom: 1px solid #a2a9b1;
         }
-        .infobox-image-container { text-align: center; padding: 8px; background: #fff; }
+        .infobox-image-container { text-align: center; padding: 8px; background: #fff; border-bottom: 1px solid #eaecf0; }
         .infobox-main-img { max-width: 100%; max-height: 200px; height: auto; }
         .infobox-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .infobox-table tr { border-bottom: 1px solid #eaecf0; }
+        .infobox-table tr:last-child { border-bottom: none; }
         .infobox-table th {
-            background: none;
             padding: 6px 10px;
             text-align: left;
             font-weight: 700;
@@ -247,6 +248,7 @@
             word-wrap: break-word;
             word-break: break-word;
             vertical-align: top;
+            background: #f0f0f0;
         }
         .infobox-table td {
             padding: 6px 10px;
@@ -258,8 +260,6 @@
             vertical-align: top;
             width: 60%;
         }
-        .infobox-table tr { border-bottom: 1px solid #eaecf0; }
-        .infobox-table tr:last-child { border-bottom: none; }
         .infobox-table a { color: #0645ad; text-decoration: none; }
         .infobox-table a:hover { text-decoration: underline; }
 
@@ -603,7 +603,7 @@
             // Подчеркнутый
             html = html.replace(/__(.*?)__/g, '<u>$1</u>');
             
-            // ЦВЕТ — ИСПРАВЛЕНО!
+            // ЦВЕТ — ИСПРАВЛЕНО! Больше не добавляет лишние теги
             html = html.replace(/\[color\s*=\s*([^\]]+)\](.*?)\[\/color\]/gs, (match, color, content) => {
                 let colorHex = color.trim();
                 const colorMap = {
@@ -615,7 +615,7 @@
                 if (colorMap[color.toLowerCase()]) {
                     colorHex = colorMap[color.toLowerCase()];
                 }
-                // Рекурсивно парсим содержимое (чтобы внутри были жирный/курсив и т.д.)
+                // Рекурсивно парсим содержимое
                 const parsedContent = parseTags(content);
                 return `<span style="color:${colorHex};">${parsedContent}</span>`;
             });
@@ -625,7 +625,7 @@
             // Сноски
             html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
             
-            // === Изображения ===
+            // Изображения
             html = html.replace(/\[img\s*(?:size=([^\s\]]+))?\s*(?:align=([^\s\]]+))?\s*(?:link=([^\s\]]+))?\](.*?)\[\/img\]/g, (match, size, align, link, url) => {
                 let sizeClass = '';
                 if (size === 'small') sizeClass = ' article-image-small';
@@ -645,10 +645,10 @@
             
             html = html.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" class="article-image article-image-center" alt="Изображение">');
             
-            // === Заголовки ===
+            // Заголовки
             html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
             
-            // === QA блоки ===
+            // QA блоки
             html = html.replace(/\[qa-color=([^\]:]+):([^\]]*)\](.*?)\[\/qa-color\]/gs, (match, color, title, content) => {
                 let colorHex = color.trim();
                 const colorMap = {
@@ -714,7 +714,7 @@
             const parsedTitle = parseTags(data.title || 'Инфобокс');
             return `
                 <table class="infobox">
-                    <tr><td colspan="2" class="infobox-header" style="background:${bgColor};">${parsedTitle}</td></tr>
+                    <tr><td colspan="2" class="infobox-header" style="background:${bgColor};border-bottom:1px solid #a2a9b1;">${parsedTitle}</td></tr>
                     ${data.image ? `<tr><td colspan="2" class="infobox-image-container">${imageHtml}</td></tr>` : ''}
                     ${rows}
                 </table>
@@ -921,9 +921,7 @@
             const canDelete = isAuthor || isAdmin;
             const canSeeHistory = isAuthor || isAdmin;
 
-            // Парсим основной контент (цвета и всё остальное уже работают)
             let mainText = parseTags(data.content || '');
-            // Разбиваем на абзацы с разделителями-полосками
             mainText = mainText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
 
             let infoboxHtml = '';
@@ -983,14 +981,14 @@
                     </div>
                 `;
             } 
-            // Карандаш с замком (защищённая статья) — ИКОНКА ЗАМЕНЕНА НА СПЕЦИАЛЬНУЮ ИЗ ВИКИМЕДИА
+            // Карандаш с ЗАКРЫТЫМ замком (исправлено!)
             else if (isProtected && currentUser) {
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="#" class="edit-btn protected" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать" style="opacity:0.6;">
                             <span class="lock-overlay">
-                                <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/unLock.svg" alt="Замок" style="width:14px;height:14px;filter:invert(0.4);">
+                                <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/lock.svg" alt="Закрытый замок" style="width:14px;height:14px;filter:invert(0.4);">
                             </span>
                         </a>
                     </div>
