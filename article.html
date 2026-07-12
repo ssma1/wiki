@@ -1039,10 +1039,10 @@
                         userId: currentUser.uid,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    alert('🗑️ Статья удалена');
+                    alert('Статья удалена');
                     window.location.href = '/';
                 });
-            }).catch(err => alert('❌ Ошибка: ' + err.message));
+            }).catch(err => alert('Ошибка: ' + err.message));
         }
 
         randomArticleBtn.addEventListener('click', () => {
