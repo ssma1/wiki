@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Политика конфиденциальности — Викивнезакона</title>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f8f9fa; color: #202122; min-height: 100vh; display: flex; flex-direction: column; }
+
+        .wiki-header { background: #EBECF0; border-bottom: 1px solid #eaecf0; padding: 8px 12px; position: sticky; top: 0; z-index: 1000; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .left-side { display: flex; align-items: center; gap: 10px; }
+        .menu-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; }
+        .menu-btn img { width: 24px; height: 24px; }
+        .wiki-logo-text { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 22px; font-weight: 400; color: #000; text-decoration: none; letter-spacing: 0.5px; line-height: 1.2; }
+        .right-side { display: flex; align-items: center; gap: 12px; }
+        .right-side a { display: flex; align-items: center; text-decoration: none; }
+        .right-side img { width: 24px; height: 24px; }
+
+        .burger-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .burger-overlay.active { display: block; opacity: 1; }
+        .burger-menu { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #ffffff; z-index: 3000; transition: left 0.3s ease; box-shadow: 2px 0 8px rgba(0,0,0,0.15); overflow-y: auto; padding: 16px 0; }
+        .burger-menu.open { left: 0; }
+        .burger-menu .menu-header { padding: 0 16px 16px 16px; border-bottom: 1px solid #eaecf0; margin-bottom: 12px; }
+        .burger-menu .menu-header .logo-text { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 22px; color: #000; }
+        .burger-menu .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #202122; text-decoration: none; font-size: 15px; border-bottom: 1px solid #f8f9fa; transition: background 0.15s; cursor: pointer; background: none; border-left: none; border-right: none; border-top: none; width: 100%; text-align: left; font-family: inherit; }
+        .burger-menu .menu-item:hover { background: #eaecf0; }
+        .burger-menu .menu-item img { width: 20px; height: 20px; flex-shrink: 0; }
+        .burger-menu .menu-divider { height: 1px; background: #eaecf0; margin: 8px 16px; }
+        .burger-menu .menu-footer { padding: 16px; font-size: 13px; color: #72777d; border-top: 1px solid #eaecf0; margin-top: 12px; }
+        .burger-menu .menu-footer a { color: #36c; text-decoration: none; }
+        .burger-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: #72777d; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 12px 16px; flex: 1; width: 100%; overflow-x: hidden; }
+        .article-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .page-title { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 30px; font-weight: 400; color: #000; margin: 0; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%; }
+        .article-tabs { display: flex; gap: 0; border-bottom: 1px solid #eaecf0; margin-bottom: 12px; flex-wrap: wrap; }
+        .article-tabs .tab { padding: 8px 16px; font-size: 14px; color: #54595d; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+        .article-tabs .tab.active { color: #202122; border-bottom-color: #36c; font-weight: 500; }
+        .article-tabs .tab:hover { color: #202122; }
+        .article-tabs .tab a { text-decoration: none; color: inherit; }
+
+        .article-tools { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; margin-bottom: 12px; border-bottom: 1px solid #eaecf0; flex-wrap: wrap; gap: 8px; }
+        .tool-left, .tool-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .tool-item { display: flex; align-items: center; }
+        .tool-item a { display: flex; align-items: center; padding: 4px; border-radius: 2px; transition: background 0.15s; text-decoration: none; color: #54595d; }
+        .tool-item a:hover { background: #eaecf0; }
+        .tool-item img { width: 20px; height: 20px; filter: invert(0.4); }
+        .share-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; }
+        .share-btn img { width: 20px; height: 20px; filter: invert(0.4); }
+        .share-btn:hover { background: #eaecf0; }
+
+        .article-body {
+            background: #ffffff;
+            padding: 20px 24px;
+            border: 1px solid #eaecf0;
+            border-radius: 2px;
+            margin-bottom: 16px;
+            line-height: 1.7;
+            font-size: 15px;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            flex: 1;
+            max-width: 100%;
+        }
+        .article-body p { margin-bottom: 12px; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
+        .article-body a { color: #0645ad; text-decoration: none; cursor: pointer; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
+        .article-body a:hover { text-decoration: underline; }
+        .article-body .ref { color: #0645ad; font-size: 13px; vertical-align: super; cursor: pointer; text-decoration: none; }
+        .article-body .ref:hover { text-decoration: underline; }
+        .article-body b { font-weight: 700; }
+        .article-body i { font-style: italic; }
+        .article-body u { text-decoration: underline; }
+
+        /* QA блок */
+        .article-body .qa-block {
+            background: #f0f4ff;
+            border-left: 4px solid #36c;
+            padding: 10px 14px;
+            margin: 10px 0;
+            border-radius: 2px;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        .article-body .qa-block .qa-title { font-weight: 600; color: #202122; }
+
+        /* Карточки */
+        .article-body .wiki-branch {
+            border-bottom: 1px solid #c8ccd1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        .article-body .wiki-branch .branch-toggle {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: #202122;
+            user-select: none;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        .article-body .wiki-branch .branch-toggle .arrow-icon {
+            width: 12px;
+            height: 12px;
+            margin-right: 15px;
+            opacity: 0.6;
+            transition: transform 0.2s ease-in-out;
+            transform: rotate(0deg);
+            flex-shrink: 0;
+        }
+        .article-body .wiki-branch .branch-toggle .arrow-icon.closed { transform: rotate(0deg); }
+        .article-body .wiki-branch .branch-toggle .arrow-icon.open { transform: rotate(180deg); }
+        .article-body .wiki-branch .branch-body {
+            display: none;
+            padding: 0 15px 15px 42px;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #202122;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .last-edited { display: flex; align-items: center; gap: 8px; padding: 10px 0; font-size: 13px; color: #72777d; border-top: 1px solid #eaecf0; margin-top: 16px; flex-wrap: wrap; }
+        .error-report { font-size: 13px; color: #72777d; margin-top: 8px; padding-top: 8px; }
+        .error-report a { color: #36c; text-decoration: none; }
+        .error-report a:hover { text-decoration: underline; }
+
+        .wiki-footer { background: #eaecf0; margin-top: 24px; padding: 20px 16px; border-top: 1px solid #c8ccd1; text-align: center; }
+        .wiki-footer .footer-brand { font-family: 'Times New Roman', 'Linux Libertine', Georgia, serif; font-size: 22px; margin-bottom: 8px; }
+        .wiki-footer .footer-links { font-size: 13px; color: #36c; line-height: 2; }
+        .wiki-footer .footer-links a { color: #36c; text-decoration: none; margin: 0 4px; }
+        .wiki-footer .footer-links a:hover { text-decoration: underline; }
+        .wiki-footer .footer-copy { font-size: 12px; color: #72777d; margin-top: 12px; }
+
+        .auth-status { font-size: 13px; color: #72777d; padding: 4px 16px 12px 16px; }
+        .auth-status .user-email { color: #202122; font-weight: 500; }
+        .auth-status .logout-btn { background: none; border: none; color: #d33; cursor: pointer; font-size: 13px; padding: 0; text-decoration: underline; font-family: inherit; }
+
+        @media (max-width: 768px) {
+            .container { padding: 8px 12px; }
+            .page-title { font-size: 22px; }
+            .article-body { padding: 12px 14px; font-size: 14px; }
+            .wiki-logo-text { font-size: 20px; }
+            .burger-menu { width: 280px; left: -280px; }
+            .article-body .wiki-branch .branch-toggle { font-size: 1.4rem; }
+        }
+        @media (min-width: 769px) {
+            .container { padding: 16px 24px; }
+            .page-title { font-size: 34px; }
+            .wiki-logo-text { font-size: 24px; }
+            .article-body { padding: 24px 32px; font-size: 16px; }
+        }
+        .hidden { display: none !important; }
+        body::after { content: ''; display: block; background: #f8f9fa; flex: 1; }
+    </style>
+</head>
+<body>
+
+    <header class="wiki-header">
+        <div class="header-content">
+            <div class="left-side">
+                <button class="menu-btn" id="menuToggle" aria-label="Меню">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg" alt="Меню">
+                </button>
+                <a href="/" class="wiki-logo-text">Викивнезакона</a>
+            </div>
+            <div class="right-side">
+                <a href="/search">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg" alt="Поиск">
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="burger-overlay" id="burgerOverlay"></div>
+    <nav class="burger-menu" id="burgerMenu">
+        <button class="burger-close" id="burgerClose">✕</button>
+        <div class="menu-header"><span class="logo-text">Викивнезакона</span></div>
+        <a href="/" class="menu-item"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg" alt="Главная"> Заглавная</a>
+        <button class="menu-item" id="randomArticleBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg" alt="Случайная"> Случайная</button>
+        <div class="menu-divider"></div>
+        <button class="menu-item" id="addArticleMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Создать"> Создать статью</button>
+        <div class="menu-divider"></div>
+        <div class="auth-status" id="authStatus"><span id="authStatusText">Вы не авторизованы</span></div>
+        <button class="menu-item" id="loginMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg" alt="Профиль" style="filter: invert(0.3);"><span id="loginMenuText">Войти</span></button>
+        <div class="menu-divider"></div>
+        <a href="#" class="menu-item" id="telegramLink">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202122" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            Подписаться на ТГК
+        </a>
+        <div class="menu-footer"><a href="#">Описание</a> • <a href="#">Отказ от ответственности</a><br><span style="font-size: 11px;">© Викивнезакона</span></div>
+    </nav>
+
+    <main class="container">
+        <div class="article-header">
+            <h1 class="page-title">Политика конфиденциальности нашей анархии</h1>
+        </div>
+
+        <div class="article-tabs">
+            <button class="tab active">Статья</button>
+            <button class="tab" id="talkTab">Обсуждение</button>
+        </div>
+
+        <div class="article-tools">
+            <div class="tool-left">
+                <button class="share-btn" id="shareBtn" title="Поделиться">
+                    <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/share.svg" alt="Поделиться">
+                </button>
+            </div>
+            <div class="tool-right">
+                <div class="tool-item">
+                    <a href="/language"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/language.svg" alt="Язык"></a>
+                </div>
+                <div class="tool-item">
+                    <a href="/favorites"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/star.svg" alt="В избранное"></a>
+                </div>
+            </div>
+        </div>
+
+        <div class="article-body">
+            <!-- ПЕРВЫЙ АБЗАЦ С ТЕГАМИ -->
+            <p>
+                <a href="/privacy"><span style="color:#0645ad;">Политика конфиденциальности</span></a> — 
+                <span style="font-weight:700;">это не для нас братан</span>, 
+                это херня которая нахуй не нужна сайту [ага], но если ты комплексный 
+                <span style="font-style:italic;">блевак/порвак</span> то тебе следует прочесть херню 
+                <span style="font-weight:700;text-decoration:underline;">ниже</span>:
+            </p>
+
+            <div class="qa-block">
+                <strong class="qa-title">Важное сообщение системы</strong>
+                <p>Это статья официально нихуя не кем не одобрена</p>
+            </div>
+
+            <p>
+                Слушайте сюда, блять. Только определенные, сука, избранные администраторы имеют право юзать админские инструменты, дающие им хоть и ограниченный, но всё же доступ к закрытой инфе о последних публикациях. Если вы обычный юзер закатайте губу, вам туда доступ закрыт нахуй 
+                <a href="#ref1"><sup class="ref">[1]</sup></a>.
+            </p>
+
+            <p>
+                Настоящая 
+                <a href="/privacy" style="color:#0645ad;">Политика конфиденциальности</a> — это вам не резиновая херня, она не распространяется на абсолютно все сайты и сервисы, которыми мы тут рулим. В частности, она не ебёт те сайты или сервисы, у которых есть своя собственная, отдельная политика конфиденциальности, а также всякие сторонние высеры и проекты левых разработчиков, крутящиеся в наших облаках. Там свои правила, так что нехуй жаловаться админу, если вас там кинут 
+                <a href="#ref2"><sup class="ref">[2]</sup></a>.
+            </p>
+
+            <p>
+                Поскольку мы, 
+                <span style="font-style:italic;font-weight:700;">ебать её в рот</span>, всей душой преданы распространению образования и продвижению исследований по всему миру, мы иногда выкидываем в общий доступ огромные дампы данных и наборы инфы. Там содержится как чистый общедоступный контент, так и всякая агрегированная или полностью неперсонализированная шняга, по которой вас хрен вычислишь.
+            </p>
+
+            <p>
+                И самое главное правило этой богадельни: если вы, блять, категорически не согласны с этой 
+                <a href="/privacy" style="color:#0645ad;">Политикой конфиденциальности</a>, то в целях защиты нашего анархического движка и других нормальных пользователей, вы можете прямо сейчас 
+                <a href="/leave" style="color:#d33;font-weight:700;">пойти нахуй</a>. Пользоваться сайтами на нашем движке вам строго-настрого запрещено 
+                <a href="#ref3"><sup class="ref">[3]</sup></a>!
+            </p>
+
+            <!-- КАРТОЧКА 1 -->
+            <div class="wiki-branch">
+                <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==" class="arrow-icon closed" alt="v">
+                    <span>Хранение и сбор вашей поебетени</span>
+                </div>
+                <div class="branch-body">
+                    <p><span style="color:#d33;font-weight:700;">[ ОФИЦИАЛЬНЫЙ ЮРИДИЧЕСКИЙ ДОКУМЕНТ ДЛЯ ТЕХ, КТО В ТАНКЕ ]</span></p>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 2 -->
+            <div class="wiki-branch">
+                <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==" class="arrow-icon closed" alt="v">
+                    <span>1. Общие положения и исторический экскурс</span>
+                </div>
+                <div class="branch-body">
+                    <p>
+                        Настоящий документ, блять, регулирует, как именно наш независимый движок 
+                        <span style="font-style:italic;">Wikivnzkna</span> обрабатывает, хранит и защищает ту инфу, которую вы умудрились тут оставить. Сразу расставим точки над «Ё»: эту политику изначально сел и написал один идейный коммуняга, известный в узких кругах под псевдонимом 
+                        <span style="font-weight:700;color:#202122;">Шпинат</span>. Этот чувак начитался Маркса, залез в код и решил построить цифровой социализм, где все данные принадлежат обществу, а приватности вообще не существует. Админ вовремя охренел от такого расклада, отобрал у Шпината клавиатуру и переписал всё под нормальные стандарты, добавив кучу матов для лучшего понимания. В итоге получился этот документ, защищающий ваши данные от капиталистических посягательств и прочей хуйни 
+                        <a href="#ref1"><sup class="ref">[1]</sup></a>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 3 -->
+            <div class="wiki-branch">
+                <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==" class="arrow-icon closed" alt="v">
+                    <span>2. Полная анархия и анонимность</span>
+                </div>
+                <div class="branch-body">
+                    <p>
+                        Слушайте сюда: мы полностью вырезали нахуй всю инфу про сбор IP-адресов, логов и прочей слежки. Наш проект абсолютно анонимен и полностью свободен. Здесь царит полная, ебать её в рот, анархия! Никакого контроля, никаких отчётов и никакого цифрового концлагеря. Вы можете писать абсолютно любой бред, тестировать любые кастомные теги, и никто никогда не узнает, кто именно сидит по ту сторону экрана. Ваша конфиденциальность защищена самим фактом того, что нам глубоко похуй, кто вы такие. Главное — не ломайте верстку.
+                    </p>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 4 -->
+            <div class="wiki-branch">
+                <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==" class="arrow-icon closed" alt="v">
+                    <span>3. Создание собственных сайтов на субдоменах</span>
+                </div>
+                <div class="branch-body">
+                    <p>
+                        А теперь к главным и самым охуенным новостям разработки. Совсем скоро на движке появится революционная функция, которая позволит любому желающему создавать собственные независимые сайты на субдомене вида 
+                        <span style="font-weight:700;color:#202122;">вашебаннывики.wikivnzkna.cc.cd</span>.
+                    </p>
+                    <p>
+                        И сразу важная ремарка для параноиков и любителей искать скрытый смысл: предпоследние символы в этом домене абсолютно ни с чем не ассоциируются! Это просто случайный набор букв, который получился в ходе пьяного штурма, так что нехуй строить теории заговора.
+                    </p>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 5 -->
+            <div class="wiki-branch">
+                <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==" class="arrow-icon closed" alt="v">
+                    <span>4. Технический стек и хранение на Firebase</span>
+                </div>
+                <div class="branch-body">
+                    <p>
+                        Чтобы вы понимали масштабы этой анархической империи: абсолютно всё это добро будет храниться и крутиться на мощностях 
+                        <a href="/firebase" style="color:#0645ad;">фаер бейсе (Firebase)</a>. Это значит, что базы данных будут летать, страницы загружаться мгновенно, а сервера не упадут, даже если на сайт ломанется толпа разъяренных юзеров. При этом, что самое пиздатое — для создания своего сайта вам вообще не нужны никакие знания программирования! Не надо учить HTML, CSS, JavaScript или ковырять серверные скрипты. Вы просто тыкаете пару кнопок, вводите текст, и движок сам собирает готовую страницу. Всё сделано настолько просто, что разберется даже полный долбоёб.
+                    </p>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 6 -->
+            <div class="wiki-branch">
+                <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==" class="arrow-icon closed" alt="v">
+                    <span>5. Файлы куки (cookies) и технический мусор</span>
+                </div>
+                <div class="branch-body">
+                    <p>
+                        Единственное, что система всё ещё использует — это маленькие текстовые файлы куки. Они нужны тупо для того, чтобы ваш браузер не тупил и помнил, какие настройки вы выставили в песочнице. Без них сайт будет сбрасывать все ваши теги при каждой перезагрузке страницы, что вызовет у вас лютую агрессию. Эти файлы хранятся локально у вас, и вы можете в любой момент снести их к ебеням через настройки браузера, если вам так спокойнее.
+                    </p>
+                </div>
+            </div>
+
+            <!-- КАРТОЧКА 7 -->
+            <div class="wiki-branch">
+                <div class="branch-toggle" onclick="const body=this.nextElementSibling; const icon=this.querySelector('.arrow-icon'); if(body.style.display==='block'){body.style.display='none'; icon.classList.remove('open'); icon.classList.add('closed');}else{body.style.display='block'; icon.classList.remove('closed'); icon.classList.add('open');}">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB
