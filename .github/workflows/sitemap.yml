@@ -1,12 +1,15 @@
 name: Auto Generate Sitemap
 
-# Запускать: при каждом пуше в ветку main ИЛИ каждый день в полночь по UTC
 on:
   push:
     branches:
       - main
   schedule:
     - cron: '0 0 * * *'
+
+# Принудительно разрешаем роботу делать коммиты и изменять файлы в репозитории
+permissions:
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -40,3 +43,4 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add sitemap.xml
           git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Автоматическое обновление sitemap.xml" && git push)
+          
