@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Создание статьи — Викивнезакона</title>
-    
-    <!-- ===== SEO МЕТА-ТЕГИ ===== -->
+
     <meta property="og:title" content="Создание статьи — Викивнезакона">
     <meta property="og:description" content="Создайте новую статью в Викивнезакона — свободной энциклопедии">
     <meta property="og:url" content="https://wikivnezakona.cc.cd/add">
@@ -171,6 +170,21 @@
         }
         .preview-content .wiki-link:hover { text-decoration: underline; }
 
+        /* Стили для изображений в превью */
+        .preview-content .article-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 8px 0;
+            display: block;
+        }
+        .preview-content .article-image-center { margin: 8px auto; }
+        .preview-content .article-image-left { margin: 8px 8px 8px 0; float: left; }
+        .preview-content .article-image-right { margin: 8px 0 8px 8px; float: right; }
+        .preview-content .article-image-small { max-width: 150px; }
+        .preview-content .article-image-medium { max-width: 300px; }
+        .preview-content .article-image-large { max-width: 500px; }
+
         .help-section {
             background: #f8f9fa;
             border: 1px solid #eaecf0;
@@ -211,6 +225,8 @@
             .preview-content .preview-infobox { float: none; width: 100%; margin: 0 0 12px 0; }
             .editor-toolbar { gap: 3px; padding: 6px 8px; }
             .editor-toolbar button { padding: 3px 8px; font-size: 12px; }
+            .preview-content .article-image-left,
+            .preview-content .article-image-right { float: none; margin: 8px auto; }
         }
         @media (min-width: 769px) {
             .wiki-logo-text { font-size: 24px; }
@@ -395,12 +411,95 @@
 
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
+        // =====================================================
+        // РАСШИРЕННЫЙ parseTags — ВСЕ ТЕГИ РАБОТАЮТ
+        // =====================================================
+        function parseTags(text) {
+            if (!text) return '';
+            let html = escapeHtml(text);
+            
+            // Жирный
+            html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            // Курсив
+            html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
+            html = html.replace(/\[italic\](.*?)\[\/italic\]/g, '<i>$1</i>');
+            // Подчеркнутый
+            html = html.replace(/__(.*?)__/g, '<u>$1</u>');
+            // Цвет
+            html = html.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
+            // Ссылки
+            html = html.replace(/\[url=([^\]]+)\](.*?)\[\/url\]/g, '<a href="$1" target="_blank" class="wiki-link">$2</a>');
+            // Сноски
+            html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
+            
+            // === Изображения [img] с поддержкой размера, выравнивания и ссылки ===
+            html = html.replace(/\[img\s*(?:size=([^\s\]]+))?\s*(?:align=([^\s\]]+))?\s*(?:link=([^\s\]]+))?\](.*?)\[\/img\]/g, (match, size, align, link, url) => {
+                let sizeClass = '';
+                if (size === 'small') sizeClass = ' article-image-small';
+                else if (size === 'medium') sizeClass = ' article-image-medium';
+                else if (size === 'large') sizeClass = ' article-image-large';
+                
+                let alignClass = ' article-image-center';
+                if (align === 'left') alignClass = ' article-image-left';
+                else if (align === 'right') alignClass = ' article-image-right';
+                
+                let imgHtml = `<img src="${url}" class="article-image${sizeClass}${alignClass}" alt="Изображение">`;
+                if (link) {
+                    imgHtml = `<a href="${link}" target="_blank">${imgHtml}</a>`;
+                }
+                return imgHtml;
+            });
+            
+            // Простое изображение без параметров (по центру)
+            html = html.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" class="article-image article-image-center" alt="Изображение">');
+            
+            // === Заголовки ===
+            html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
+            
+            // === QA блоки с поддержкой тегов внутри ===
+            // Цветные QA с поддержкой названий цветов и hex
+            html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
+                let colorHex = color;
+                const colorMap = {
+                    'red': '#ff0000',
+                    'blue': '#0000ff',
+                    'green': '#00ff00',
+                    'yellow': '#ffff00',
+                    'orange': '#ff8c00',
+                    'purple': '#800080',
+                    'pink': '#ff69b4',
+                    'cyan': '#00ffff',
+                    'magenta': '#ff00ff',
+                    'white': '#ffffff',
+                    'black': '#000000',
+                    'gray': '#808080',
+                    'grey': '#808080'
+                };
+                if (colorMap[color.toLowerCase()]) {
+                    colorHex = colorMap[color.toLowerCase()];
+                }
+                // Обрабатываем теги внутри QA
+                const processedContent = parseTags(content);
+                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;">${processedContent}</div>`;
+            });
+            
+            // Обычные QA с заголовком
+            html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
+                const cleanTitle = title || 'Вопрос-Ответ';
+                const processedContent = parseTags(content);
+                return `<div style="background:#f0f4ff;border-left:4px solid #36c;padding:10px 14px;margin:10px 0;border-radius:2px;"><strong>${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
+            });
+            
+            return html;
+        }
+
         function renderForm(existingData, titleParam) {
             const title = existingData?.title || titleParam || '';
             const content = existingData?.content || '';
             const afterContent = existingData?.afterContent || '';
             const infobox = existingData?.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' };
             const branches = existingData?.branches || [];
+            const isProtected = existingData?.protected || false;
 
             const isAuthor = currentUser && existingData && existingData.authorId === currentUser.uid;
             const isAdmin = currentUserRole === 'admin';
@@ -410,19 +509,19 @@
                 <h1 class="form-title">${isEditMode ? 'Редактирование статьи' : 'Создание новой статьи'}</h1>
                 <div class="form-status" id="formStatus"></div>
                 <form id="articleForm">
-                    <!-- ПОЛЕ НАЗВАНИЯ — ВИДНО ТОЛЬКО АВТОРУ ИЛИ АДМИНУ -->
-                    <div class="form-group" id="titleGroup" style="${canEditTitle ? '' : 'display:none;'}">
+                    ${isProtected ? `<div style="background:#fff3f3;border:1px solid #d33;padding:12px 16px;border-radius:4px;margin-bottom:20px;color:#d33;font-weight:600;">🔒 Статья защищена от редактирования. Только администратор может снять защиту.</div>` : ''}
+                    
+                    <div class="form-group" id="titleGroup" style="${canEditTitle && !isProtected ? '' : 'display:none;'}">
                         <label>Название статьи <span class="required">*</span></label>
                         <input type="text" id="articleTitle" value="${escapeHtml(title)}" placeholder="Введите название статьи" required>
                         ${isEditMode ? `<span style="font-size:12px;color:#2a8;display:block;margin-top:4px;">✅ Вы можете изменить название</span>` : ''}
                     </div>
                     
-                    <!-- ЗАГЛУШКА ДЛЯ ЧУЖИХ -->
-                    ${!canEditTitle && isEditMode ? `
+                    ${(!canEditTitle || isProtected) && isEditMode ? `
                         <div class="form-group" style="opacity:0.6;background:#f5f5f5;padding:10px 12px;border-radius:4px;margin-bottom:20px;">
-                            <label style="font-weight:600;font-size:15px;color:#72777d;">Название статьи (только для чтения)</label>
+                            <label style="font-weight:600;font-size:15px;color:#72777d;">Название статьи ${isProtected ? '(защищено)' : '(только для чтения)'}</label>
                             <div style="font-size:16px;color:#202122;padding:4px 0;">${escapeHtml(title)}</div>
-                            <span style="font-size:12px;color:#72777d;">⚠️ Изменить название может только автор или администратор</span>
+                            <span style="font-size:12px;color:#72777d;">⚠️ ${isProtected ? 'Статья защищена администратором' : 'Изменить название может только автор или администратор'}</span>
                         </div>
                         <input type="hidden" id="articleTitle" value="${escapeHtml(title)}">
                     ` : ''}
@@ -440,42 +539,46 @@
                             <button type="button" data-tag="url">[url=]</button>
                             <button type="button" data-tag="ref">[1]</button>
                             <button type="button" data-tag="section">=== Заголовок ===</button>
-                            <button type="button" data-tag="qa">[qa=""]</button>
+                            <button type="button" data-tag="qa">[qa]</button>
+                            <button type="button" data-tag="qa-color">[qa-color]</button>
+                            <button type="button" data-tag="img">[img]</button>
                         </div>
-                        <textarea id="articleContent" class="editor-textarea" placeholder="Введите текст статьи...">${escapeHtml(content)}</textarea>
+                        <textarea id="articleContent" class="editor-textarea" placeholder="Введите текст статьи..." ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}>${escapeHtml(content)}</textarea>
                         <div class="hint">
                             <strong>Форматирование:</strong><br>
                             <code>**жирный**</code> — жирный &nbsp;|&nbsp; <code>[italic]текст[/italic]</code> — наклонный &nbsp;|&nbsp;
                             <code>[color=red]текст[/color]</code> — цветной &nbsp;|&nbsp; <code>[url=адрес]текст[/url]</code> — ссылка &nbsp;|&nbsp;
                             <code>[1]</code> — сноска &nbsp;|&nbsp; <code>===Заголовок===</code> — раздел &nbsp;|&nbsp;
-                            <code>[qa="заголовок"]текст[/qa]</code> — блок Вопрос-Ответ с заголовком
+                            <code>[qa="заголовок"]текст[/qa]</code> — блок Вопрос-Ответ &nbsp;|&nbsp;
+                            <code>[qa-color=red]текст[/qa-color]</code> — цветной Вопрос-Ответ &nbsp;|&nbsp;
+                            <code>[img size=small align=center link=URL]URL[/img]</code> — изображение
                         </div>
                     </div>
 
                     <div class="infobox-builder">
                         <div class="infobox-title-section">Инфобокс (справочная таблица) — можно использовать теги</div>
                         <div class="infobox-sub">
-                            <div class="form-group"><label>Заголовок инфобокса</label><input type="text" id="infoboxTitle" value="${escapeHtml(infobox.title || 'Инфобокс')}" placeholder="Название"></div>
-                            <div class="form-group"><label>Цвет фона заголовка</label><input type="color" id="infoboxBgColor" value="${infobox.bgColor ? '#0033cc' : '#0033cc'}"></div>
-                            <div class="form-group"><label>Изображение</label><div class="infobox-image-input"><input type="text" id="infoboxImage" value="${escapeHtml(infobox.image || '')}" placeholder="URL или загрузите"><button type="button" class="upload-btn" id="uploadImageBtn">Загрузить</button></div><div class="upload-progress" id="uploadProgress">Загрузка...</div><input type="file" id="imageFileInput" accept="image/*" style="display:none;"></div>
+                            <div class="form-group"><label>Заголовок инфобокса</label><input type="text" id="infoboxTitle" value="${escapeHtml(infobox.title || 'Инфобокс')}" placeholder="Название" ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}></div>
+                            <div class="form-group"><label>Цвет фона заголовка</label><input type="color" id="infoboxBgColor" value="${infobox.bgColor ? '#0033cc' : '#0033cc'}" ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}></div>
+                            <div class="form-group"><label>Изображение</label><div class="infobox-image-input"><input type="text" id="infoboxImage" value="${escapeHtml(infobox.image || '')}" placeholder="URL или загрузите" ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}><button type="button" class="upload-btn" id="uploadImageBtn" ${isProtected ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Загрузить</button></div><div class="upload-progress" id="uploadProgress">Загрузка...</div><input type="file" id="imageFileInput" accept="image/*" style="display:none;"></div>
                         </div>
                         <div id="infoboxFields">
-                            ${Object.entries(infobox.fields || {}).map(([key, value]) => `<div class="infobox-field"><input type="text" class="infobox-key" value="${escapeHtml(key)}" placeholder="Название поля (можно с тегами)"><input type="text" class="infobox-value" value="${escapeHtml(value)}" placeholder="Значение (можно с тегами)"><button type="button" class="remove-field">✕</button></div>`).join('')}
+                            ${Object.entries(infobox.fields || {}).map(([key, value]) => `<div class="infobox-field"><input type="text" class="infobox-key" value="${escapeHtml(key)}" placeholder="Название поля (можно с тегами)" ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}><input type="text" class="infobox-value" value="${escapeHtml(value)}" placeholder="Значение (можно с тегами)" ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}><button type="button" class="remove-field" ${isProtected ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>✕</button></div>`).join('')}
                             <div class="infobox-field" id="infoboxTemplate" style="display:none;"><input type="text" class="infobox-key" placeholder="Название поля (можно с тегами)"><input type="text" class="infobox-value" placeholder="Значение (можно с тегами)"><button type="button" class="remove-field">✕</button></div>
                         </div>
-                        <div class="infobox-actions"><button type="button" id="addInfoboxField">Добавить поле</button><button type="button" id="clearInfobox">Очистить</button></div>
+                        <div class="infobox-actions"><button type="button" id="addInfoboxField" ${isProtected ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Добавить поле</button><button type="button" id="clearInfobox" ${isProtected ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Очистить</button></div>
                     </div>
 
-                    <div class="form-group"><label>Текст после статьи <span style="font-weight:400;color:#72777d;">(необязательно, можно с тегами)</span></label><textarea id="afterContent" placeholder="Дополнительный текст после статьи..." rows="3">${escapeHtml(afterContent)}</textarea></div>
+                    <div class="form-group"><label>Текст после статьи <span style="font-weight:400;color:#72777d;">(необязательно, можно с тегами)</span></label><textarea id="afterContent" placeholder="Дополнительный текст после статьи..." rows="3" ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}>${escapeHtml(afterContent)}</textarea></div>
 
                     <div class="branches-builder">
                         <div class="branches-title">Ветки (разделы статьи) — можно использовать теги <span class="branch-count-badge">(макс. 10)</span></div>
                         <div class="branches-hint">Структура разделов как в Википедии — с возможностью сворачивания. В заголовках и содержании можно использовать теги.</div>
                         <div id="branchesContainer">
-                            ${branches.map((b, i) => `<div class="branch-item" data-index="${i}"><div class="branch-header"><input type="text" class="branch-title-input" value="${escapeHtml(b.title || 'Раздел ' + (i+1))}" placeholder="Название раздела (можно с тегами)"><button type="button" class="remove-branch">✕</button></div><textarea class="branch-content-input" placeholder="Содержание раздела (можно с тегами)...">${escapeHtml(b.content || '')}</textarea></div>`).join('')}
+                            ${branches.map((b, i) => `<div class="branch-item" data-index="${i}"><div class="branch-header"><input type="text" class="branch-title-input" value="${escapeHtml(b.title || 'Раздел ' + (i+1))}" placeholder="Название раздела (можно с тегами)" ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}><button type="button" class="remove-branch" ${isProtected ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>✕</button></div><textarea class="branch-content-input" placeholder="Содержание раздела (можно с тегами)..." ${isProtected ? 'disabled style="background:#f5f5f5;cursor:not-allowed;"' : ''}>${escapeHtml(b.content || '')}</textarea></div>`).join('')}
                             <div class="branch-item" id="branchTemplate" style="display:none;"><div class="branch-header"><input type="text" class="branch-title-input" placeholder="Название раздела (можно с тегами)"><button type="button" class="remove-branch">✕</button></div><textarea class="branch-content-input" placeholder="Содержание раздела (можно с тегами)..."></textarea></div>
                         </div>
-                        <div class="branches-actions"><button type="button" id="addBranchBtn">Добавить ветку</button><button type="button" id="clearBranchesBtn">Удалить все</button></div>
+                        <div class="branches-actions"><button type="button" id="addBranchBtn" ${isProtected ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Добавить ветку</button><button type="button" id="clearBranchesBtn" ${isProtected ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>Удалить все</button></div>
                     </div>
 
                     <div class="preview-section"><div class="preview-title">Предпросмотр</div><div class="preview-content" id="previewContent"></div></div>
@@ -483,20 +586,25 @@
                     <div class="help-section">
                         <div class="help-title">Как это работает — теги можно использовать везде!</div>
                         <div class="help-item">
-                            <strong>Ссылка:</strong> <code>[url=адрес]текст[/url]</code> — например: <span class="example">[url=https://example.com]Википедия[/url]</span>
+                            <strong>Ссылка:</strong> <code>[url=адрес]текст[/url]</code> — <span class="example">[url=https://example.com]Википедия[/url]</span>
                         </div>
                         <div class="help-item">
-                            <strong>Вопрос-Ответ:</strong> <code>[qa="заголовок"]текст[/qa]</code><br>
-                            <span class="example">[qa="сколько жира у матери админа"] А тебе не похуй? [/qa]</span>
+                            <strong>Вопрос-Ответ:</strong> <code>[qa="заголовок"]текст[/qa]</code>
                         </div>
                         <div class="help-item">
-                            <strong>Жирный:</strong> <code>**текст**</code> — <span class="example">**жирный текст**</span>
+                            <strong>Цветной Вопрос-Ответ:</strong> <code>[qa-color=red]текст[/qa-color]</code>
                         </div>
                         <div class="help-item">
-                            <strong>Наклонный:</strong> <code>[italic]текст[/italic]</code> или <code>*текст*</code> — <span class="example">[italic]наклонный текст[/italic]</span>
+                            <strong>Изображение:</strong> <code>[img size=small|medium|large align=left|center|right link=URL]URL[/img]</code>
                         </div>
                         <div class="help-item">
-                            <strong>Цветной текст:</strong> <code>[color=red]текст[/color]</code> — <span class="example">[color=#ff0000]красный текст[/color]</span>
+                            <strong>Жирный:</strong> <code>**текст**</code>
+                        </div>
+                        <div class="help-item">
+                            <strong>Наклонный:</strong> <code>[italic]текст[/italic]</code> или <code>*текст*</code>
+                        </div>
+                        <div class="help-item">
+                            <strong>Цветной текст:</strong> <code>[color=red]текст[/color]</code>
                         </div>
                         <div class="help-item">
                             <strong>Заголовок раздела:</strong> <code>===Заголовок===</code>
@@ -508,9 +616,10 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-primary">${isEditMode ? 'Сохранить изменения' : 'Опубликовать статью'}</button>
+                        <button type="submit" class="btn-primary" ${isProtected ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>${isEditMode ? 'Сохранить изменения' : 'Опубликовать статью'}</button>
                         <button type="button" class="btn-secondary" id="cancelBtn">Отмена</button>
                         ${isEditMode ? `<button type="button" class="btn-danger" id="deleteBtn">Удалить статью</button>` : ''}
+                        ${isAdmin && isEditMode ? `<button type="button" class="btn-secondary" id="toggleProtectBtn" style="border-color:${isProtected ? '#2a8' : '#d33'};color:${isProtected ? '#2a8' : '#d33'};">${isProtected ? '🔓 Снять защиту' : '🔒 Защитить статью'}</button>` : ''}
                     </div>
                 </form>
             `;
@@ -519,6 +628,7 @@
             const contentArea = document.getElementById('articleContent');
             document.querySelectorAll('.editor-toolbar button[data-tag]').forEach(btn => {
                 btn.addEventListener('click', () => {
+                    if (isProtected) { alert('🔒 Статья защищена от редактирования'); return; }
                     const tag = btn.dataset.tag; const start = contentArea.selectionStart; const end = contentArea.selectionEnd; const selected = contentArea.value.substring(start, end); let replacement = '';
                     if (tag === 'bold') replacement = `**${selected || 'жирный текст'}**`;
                     else if (tag === 'italic') replacement = `*${selected || 'курсив'}*`;
@@ -533,9 +643,46 @@
                     else if (tag === 'ref') replacement = `[${selected || '1'}]`;
                     else if (tag === 'section') replacement = `===${selected || 'Заголовок раздела'}===`;
                     else if (tag === 'qa') {
-                        const title = prompt('Введите заголовок для Вопроса-Ответа:');
+                        const title = prompt('Введите заголовок для Вопроса-Ответа (можно с тегами):');
                         if (title !== null) {
                             replacement = `[qa="${title || 'Вопрос'}"]${selected || 'текст ответа'}[/qa]`;
+                        }
+                    }
+                    else if (tag === 'qa-color') {
+                        const color = prompt('Введите цвет (red, blue, #ff0000 и т.д.):');
+                        if (color !== null && color.trim()) {
+                            replacement = `[qa-color=${color.trim()}]${selected || 'текст ответа'}[/qa-color]`;
+                        }
+                    }
+                    else if (tag === 'img') {
+                        const imgUrl = prompt('Введите URL изображения (или нажмите Отмена для загрузки из галереи):');
+                        if (imgUrl !== null && imgUrl.trim()) {
+                            const size = prompt('Размер (small/medium/large, Enter для среднего):') || 'medium';
+                            const align = prompt('Выравнивание (left/center/right, Enter для центра):') || 'center';
+                            const link = prompt('Ссылка при клике (Enter без ссылки):') || '';
+                            replacement = `[img size=${size} align=${align}${link ? ' link='+link : ''}]${imgUrl.trim()}[/img]`;
+                        } else if (imgUrl !== null) {
+                            const fileInput = document.createElement('input');
+                            fileInput.type = 'file';
+                            fileInput.accept = 'image/*';
+                            fileInput.onchange = async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                try {
+                                    const url = await uploadToImgbb(file);
+                                    const size = prompt('Размер (small/medium/large, Enter для среднего):') || 'medium';
+                                    const align = prompt('Выравнивание (left/center/right, Enter для центра):') || 'center';
+                                    const link = prompt('Ссылка при клике (Enter без ссылки):') || '';
+                                    const imgTag = `[img size=${size} align=${align}${link ? ' link='+link : ''}]${url}[/img]`;
+                                    contentArea.value = contentArea.value.substring(0, start) + imgTag + contentArea.value.substring(end);
+                                    contentArea.focus();
+                                    updatePreview();
+                                } catch (err) {
+                                    alert('Ошибка загрузки: ' + err.message);
+                                }
+                            };
+                            fileInput.click();
+                            return;
                         }
                     }
                     if (replacement) { 
@@ -547,6 +694,7 @@
             });
 
             document.getElementById('applyColorBtn').addEventListener('click', () => {
+                if (isProtected) { alert('🔒 Статья защищена от редактирования'); return; }
                 const color = document.getElementById('colorPicker').value; const start = contentArea.selectionStart; const end = contentArea.selectionEnd; const selected = contentArea.value.substring(start, end);
                 if (start === end) contentArea.value = contentArea.value.substring(0, start) + `[color=${color}]цветной текст[/color]` + contentArea.value.substring(end);
                 else contentArea.value = contentArea.value.substring(0, start) + `[color=${color}]${selected}[/color]` + contentArea.value.substring(end);
@@ -554,9 +702,9 @@
             });
 
             // === INFOBOX ===
-            document.getElementById('addInfoboxField').addEventListener('click', () => { const container = document.getElementById('infoboxFields'); const template = document.getElementById('infoboxTemplate'); const clone = template.cloneNode(true); clone.style.display = 'flex'; clone.id = ''; clone.querySelectorAll('input').forEach(inp => inp.value = ''); container.appendChild(clone); attachRemoveHandler(clone); });
+            document.getElementById('addInfoboxField').addEventListener('click', () => { if (isProtected) return; const container = document.getElementById('infoboxFields'); const template = document.getElementById('infoboxTemplate'); const clone = template.cloneNode(true); clone.style.display = 'flex'; clone.id = ''; clone.querySelectorAll('input').forEach(inp => inp.value = ''); container.appendChild(clone); attachRemoveHandler(clone); });
             document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => attachRemoveHandler(el));
-            document.getElementById('clearInfobox').addEventListener('click', () => { document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => el.remove()); });
+            document.getElementById('clearInfobox').addEventListener('click', () => { if (isProtected) return; document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => el.remove()); });
             function attachRemoveHandler(el) { const btn = el.querySelector('.remove-field'); if (btn) btn.addEventListener('click', () => el.remove()); }
 
             // === IMAGE UPLOAD ===
@@ -565,8 +713,9 @@
             const imageInput = document.getElementById('infoboxImage'); 
             const uploadProgress = document.getElementById('uploadProgress');
             
-            uploadBtn.addEventListener('click', () => fileInput.click());
+            uploadBtn.addEventListener('click', () => { if (isProtected) return; fileInput.click(); });
             fileInput.addEventListener('change', async (e) => {
+                if (isProtected) return;
                 const file = e.target.files[0]; 
                 if (!file) return; 
                 uploadProgress.classList.add('active'); 
@@ -590,12 +739,13 @@
 
             // === BRANCHES ===
             document.getElementById('addBranchBtn').addEventListener('click', () => {
+                if (isProtected) return;
                 const container = document.getElementById('branchesContainer'); const existing = container.querySelectorAll('.branch-item:not(#branchTemplate)');
                 if (existing.length >= 10) { alert('Максимум 10 веток'); return; }
                 const template = document.getElementById('branchTemplate'); const clone = template.cloneNode(true); clone.style.display = 'block'; clone.id = ''; clone.querySelectorAll('input, textarea').forEach(el => el.value = ''); container.appendChild(clone); attachBranchRemove(clone); updatePreview();
             });
             document.querySelectorAll('.branch-item:not(#branchTemplate)').forEach(el => attachBranchRemove(el));
-            document.getElementById('clearBranchesBtn').addEventListener('click', () => { document.querySelectorAll('.branch-item:not(#branchTemplate)').forEach(el => el.remove()); updatePreview(); });
+            document.getElementById('clearBranchesBtn').addEventListener('click', () => { if (isProtected) return; document.querySelectorAll('.branch-item:not(#branchTemplate)').forEach(el => el.remove()); updatePreview(); });
             function attachBranchRemove(el) { const btn = el.querySelector('.remove-branch'); if (btn) btn.addEventListener('click', () => { el.remove(); updatePreview(); }); el.querySelectorAll('input, textarea').forEach(inp => inp.addEventListener('input', updatePreview)); }
 
             // === PREVIEW ===
@@ -603,23 +753,6 @@
             const contentInput = document.getElementById('articleContent');
             const afterInput = document.getElementById('afterContent');
             const preview = document.getElementById('previewContent');
-
-            function parseTags(text) {
-                if (!text) return '';
-                let html = escapeHtml(text);
-                html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-                html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
-                html = html.replace(/\[italic\](.*?)\[\/italic\]/g, '<i>$1</i>');
-                html = html.replace(/__(.*?)__/g, '<u>$1</u>');
-                html = html.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
-                html = html.replace(/\[url=([^\]]+)\](.*?)\[\/url\]/g, '<a href="$1" target="_blank" class="wiki-link">$2</a>');
-                html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
-                html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
-                    const cleanTitle = title || 'Вопрос-Ответ';
-                    return `<div style="background:#f0f4ff;border-left:4px solid #36c;padding:10px 14px;margin:10px 0;border-radius:2px;"><strong>${escapeHtml(cleanTitle)}</strong><p>${escapeHtml(content)}</p></div>`;
-                });
-                return html;
-            }
 
             function updatePreview() {
                 let previewHtml = parseTags(contentInput.value || '');
@@ -686,9 +819,23 @@
             document.getElementById('infoboxBgColor').addEventListener('input', updatePreview);
             setTimeout(updatePreview, 200);
 
-            document.getElementById('articleForm').addEventListener('submit', (e) => { e.preventDefault(); saveArticle(); });
+            document.getElementById('articleForm').addEventListener('submit', (e) => { e.preventDefault(); if (isProtected) { showStatus('🔒 Статья защищена от редактирования', 'error'); return; } saveArticle(); });
             document.getElementById('cancelBtn').addEventListener('click', () => { if (isEditMode && editArticleId) window.location.href = '/article?id=' + editArticleId; else window.location.href = '/'; });
             if (isEditMode) document.getElementById('deleteBtn')?.addEventListener('click', () => { if (confirm('Удалить статью?')) deleteArticle(); });
+            
+            document.getElementById('toggleProtectBtn')?.addEventListener('click', () => {
+                if (!isAdmin) { alert('Только администраторы могут защищать статьи'); return; }
+                const newProtected = !isProtected;
+                if (confirm(newProtected ? 'Защитить статью от редактирования?' : 'Снять защиту со статьи?')) {
+                    db.collection('articles').doc(editArticleId).update({
+                        protected: newProtected,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        alert(newProtected ? '🔒 Статья защищена!' : '🔓 Защита снята!');
+                        window.location.reload();
+                    }).catch(err => alert('Ошибка: ' + err.message));
+                }
+            });
         }
 
         // ===== СОХРАНЕНИЕ В ИСТОРИЮ =====
@@ -709,7 +856,6 @@
             }).catch(err => console.error('Ошибка сохранения истории:', err));
         }
 
-        // ===== ОСНОВНАЯ ФУНКЦИЯ СОХРАНЕНИЯ =====
         function saveArticle() {
             const status = document.getElementById('formStatus'); 
             status.className = 'form-status'; 
@@ -757,7 +903,6 @@
                 branches
             };
 
-            // 🔥 РЕДАКТИРОВАНИЕ
             if (isEditMode && editArticleId) {
                 const updateData = {
                     title: articleData.title,
@@ -789,16 +934,15 @@
                         console.error('❌ Ошибка сохранения:', err);
                         showStatus('❌ Ошибка: ' + err.message, 'error');
                     });
-            } 
-            // 🔥 СОЗДАНИЕ НОВОЙ СТАТЬИ
-            else {
+            } else {
                 const newRef = db.collection('articles').doc();
                 const newArticleData = {
                     ...articleData,
                     articleId: newRef.id,
                     authorId: currentUser.uid,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    protected: false
                 };
                 
                 console.log('📝 Создание новой статьи:', { id: newRef.id, newArticleData });

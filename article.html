@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Викивнезакона — Статья</title>
-    <link rel="icon" type="image/png" href="https://i.ibb.co/bRPB7PD3/2172-20250927182930.png">
-    
     
     <meta property="og:title" content="Викивнезакона">
     <meta property="og:description" content="Свободная энциклопедия, которую может редактировать каждый">
@@ -80,9 +78,11 @@
         .share-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; }
         .share-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         .share-btn:hover { background: #eaecf0; }
-        .edit-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; text-decoration: none; }
+        .edit-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; text-decoration: none; position: relative; }
         .edit-btn img { width: 20px; height: 20px; filter: invert(0.4); }
         .edit-btn:hover { background: #eaecf0; }
+        .edit-btn .lock-icon { position: absolute; bottom: -2px; right: -4px; font-size: 10px; background: #d33; color: #fff; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+
         .history-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; color: #54595d; font-family: inherit; font-size: 13px; gap: 4px; }
         .history-btn:hover { background: #eaecf0; }
         .history-btn img { width: 18px; height: 18px; filter: invert(0.4); }
@@ -121,6 +121,9 @@
             word-break: break-word;
         }
         .article-body .qa-block .qa-title { font-weight: 600; color: #202122; }
+        .article-body .qa-block b, .article-body .qa-block strong { font-weight: 700; }
+        .article-body .qa-block i, .article-body .qa-block em { font-style: italic; }
+        .article-body .qa-block u { text-decoration: underline; }
 
         .article-body .wiki-branch {
             border-bottom: 1px solid #c8ccd1;
@@ -307,6 +310,21 @@
         .history-item .history-restore:hover { background: #2a4b8d; }
         .history-empty { text-align: center; color: #72777d; padding: 30px 0; }
 
+        /* Стили для изображений в статье */
+        .article-body .article-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 8px 0;
+            display: block;
+        }
+        .article-body .article-image-center { margin: 8px auto; }
+        .article-body .article-image-left { margin: 8px 8px 8px 0; float: left; }
+        .article-body .article-image-right { margin: 8px 0 8px 8px; float: right; }
+        .article-body .article-image-small { max-width: 150px; }
+        .article-body .article-image-medium { max-width: 300px; }
+        .article-body .article-image-large { max-width: 500px; }
+
         @media (max-width: 768px) {
             .infobox { float: none; width: 100%; margin: 0 0 16px 0; }
             .container { padding: 8px 12px; }
@@ -317,6 +335,8 @@
             .article-body .wiki-branch .branch-toggle { font-size: 1.4rem; }
             .history-modal .modal-content { padding: 16px; }
             .history-item { flex-direction: column; align-items: flex-start; }
+            .article-body .article-image-left,
+            .article-body .article-image-right { float: none; margin: 8px auto; }
         }
         @media (min-width: 769px) {
             .container { padding: 16px 24px; }
@@ -516,20 +536,84 @@
 
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
+        // =====================================================
+        // РАСШИРЕННЫЙ parseTags С ПОДДЕРЖКОЙ ВСЕХ ТЕГОВ
+        // =====================================================
         function parseTags(text) {
             if (!text) return '';
             let html = escapeHtml(text);
+            
+            // Жирный
             html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            // Курсив
             html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
             html = html.replace(/\[italic\](.*?)\[\/italic\]/g, '<i>$1</i>');
+            // Подчеркнутый
             html = html.replace(/__(.*?)__/g, '<u>$1</u>');
+            // Цвет
             html = html.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
+            // Ссылки
             html = html.replace(/\[url=([^\]]+)\](.*?)\[\/url\]/g, '<a href="$1" target="_blank">$2</a>');
+            // Сноски
             html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
+            
+            // === Изображения [img]URL[/img] с поддержкой размера ===
+            // [img size=small]URL[/img], [img align=center]URL[/img], [img link=URL]URL[/img]
+            html = html.replace(/\[img\s*(?:size=([^\s\]]+))?\s*(?:align=([^\s\]]+))?\s*(?:link=([^\s\]]+))?\](.*?)\[\/img\]/g, (match, size, align, link, url) => {
+                let sizeClass = '';
+                if (size) sizeClass = ' article-image-' + size;
+                let alignClass = '';
+                if (align === 'left') alignClass = ' article-image-left';
+                else if (align === 'right') alignClass = ' article-image-right';
+                else if (align === 'center') alignClass = ' article-image-center';
+                let imgHtml = `<img src="${url}" class="article-image${sizeClass}${alignClass}" alt="Изображение">`;
+                if (link) {
+                    imgHtml = `<a href="${link}" target="_blank">${imgHtml}</a>`;
+                }
+                return imgHtml;
+            });
+            
+            // Простое изображение без параметров
+            html = html.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" class="article-image article-image-center" alt="Изображение">');
+            
+            // === Заголовки ===
+            html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
+            
+            // === QA блоки с цветом и поддержкой тегов внутри ===
+            // Сначала обрабатываем цветные QA
+            html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
+                // Определяем цвет (поддерживаем и названия цветов)
+                let colorHex = color;
+                const colorMap = {
+                    'red': '#ff0000',
+                    'blue': '#0000ff',
+                    'green': '#00ff00',
+                    'yellow': '#ffff00',
+                    'orange': '#ff8c00',
+                    'purple': '#800080',
+                    'pink': '#ff69b4',
+                    'cyan': '#00ffff',
+                    'magenta': '#ff00ff',
+                    'white': '#ffffff',
+                    'black': '#000000',
+                    'gray': '#808080',
+                    'grey': '#808080'
+                };
+                if (colorMap[color.toLowerCase()]) {
+                    colorHex = colorMap[color.toLowerCase()];
+                }
+                // Обрабатываем теги внутри QA
+                const processedContent = parseTags(content);
+                return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;">${processedContent}</div>`;
+            });
+            
+            // Обычные QA с заголовком
             html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
                 const cleanTitle = title || 'Вопрос-Ответ';
-                return `<div class="qa-block"><strong>${escapeHtml(cleanTitle)}</strong><p>${escapeHtml(content)}</p></div>`;
+                const processedContent = parseTags(content);
+                return `<div class="qa-block"><strong class="qa-title">${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
             });
+            
             return html;
         }
 
@@ -551,8 +635,8 @@
                     const g = parseInt(hex.substring(2, 4), 16);
                     const b = parseInt(hex.substring(4, 6), 16);
                     bgColor = `rgba(${r}, ${g}, ${b}, 0.12)`;
-                } else if (data.bgColor.startsWith('rgb')) {
-                    bgColor = data.bgColor;
+                } else {
+                    bgColor = data.bgColor + '22';
                 }
             }
             const parsedTitle = parseTags(data.title || 'Инфобокс');
@@ -655,19 +739,118 @@
             }
         }
 
+        // =====================================================
+        // ИСТОРИЯ ИЗМЕНЕНИЙ (из отдельной коллекции)
+        // =====================================================
+        async function loadHistory(articleId) {
+            historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
+            try {
+                const historySnapshot = await db.collection('articleHistory')
+                    .where('articleId', '==', articleId)
+                    .orderBy('timestamp', 'desc')
+                    .limit(100)
+                    .get();
+
+                let historyItems = [];
+                historySnapshot.forEach(doc => {
+                    historyItems.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (historyItems.length === 0) {
+                    historyList.innerHTML = '<div class="history-empty">История изменений пуста</div>';
+                    return;
+                }
+
+                let html = '';
+                historyItems.forEach((item, index) => {
+                    const date = formatDateTime(item.timestamp);
+                    const user = item.username || 'Неизвестный пользователь';
+                    let actionText = 'Изменение';
+                    if (item.action === 'create') actionText = '📝 Создание статьи';
+                    else if (item.action === 'restore') actionText = '🔄 Восстановление';
+                    else if (item.action === 'edit') actionText = '✏️ Редактирование';
+
+                    html += `
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-user">${escapeHtml(user)}</div>
+                                <div class="history-date">${escapeHtml(date)}</div>
+                                <div class="history-action">${escapeHtml(actionText)}</div>
+                            </div>
+                            ${index > 0 ? `<button class="history-restore" data-history-id="${item.id}">Восстановить</button>` : ''}
+                        </div>
+                    `;
+                });
+
+                historyList.innerHTML = html;
+
+                document.querySelectorAll('.history-restore').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const historyId = btn.dataset.historyId;
+                        if (confirm('Восстановить эту версию?')) {
+                            await restoreVersion(articleId, historyId);
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error('❌ Ошибка загрузки истории:', err);
+                historyList.innerHTML = '<div class="history-empty">Ошибка загрузки истории</div>';
+            }
+        }
+
+        async function restoreVersion(articleId, historyId) {
+            try {
+                const doc = await db.collection('articleHistory').doc(historyId).get();
+                if (!doc.exists) {
+                    alert('Версия не найдена');
+                    return;
+                }
+                const data = doc.data();
+                const restoredData = data.data;
+                
+                await db.collection('articles').doc(articleId).update({
+                    title: restoredData.title,
+                    content: restoredData.content,
+                    afterContent: restoredData.afterContent || '',
+                    infobox: restoredData.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
+                    branches: restoredData.branches || [],
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                await db.collection('articleHistory').add({
+                    articleId: articleId,
+                    userId: currentUser?.uid || 'unknown',
+                    username: currentUsername || 'Неизвестный',
+                    action: 'restore',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    data: restoredData,
+                    restoredFrom: historyId
+                });
+
+                alert('✅ Версия восстановлена!');
+                historyModal.classList.remove('active');
+                document.body.style.overflow = '';
+                loadArticle(articleId);
+            } catch (err) {
+                console.error('Ошибка восстановления:', err);
+                alert('❌ Ошибка восстановления: ' + err.message);
+            }
+        }
+
         function renderArticle(data) {
             updateMetaTags(data);
 
             const isAdmin = currentUserRole === 'admin';
             const isAuthor = currentUser && data.authorId === currentUser.uid;
+            const isProtected = data.protected || false;
             
-            const canEdit = !!currentUser;
-            const canChangeTitle = isAuthor || isAdmin;
+            const canEdit = !!currentUser && !isProtected;
+            const canChangeTitle = (isAuthor || isAdmin) && !isProtected;
             const canDelete = isAuthor || isAdmin;
             const canSeeHistory = isAuthor || isAdmin;
 
             let mainText = parseTags(data.content || '');
-            mainText = mainText.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
             mainText = mainText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
 
             let infoboxHtml = '';
@@ -717,6 +900,7 @@
                 </div>
             `;
 
+            // Кнопка редактирования с замком если защищено
             if (canEdit) {
                 toolsRightHtml += `
                     <div class="tool-item">
@@ -725,7 +909,16 @@
                         </a>
                     </div>
                 `;
-            } else {
+            } else if (isProtected && currentUser) {
+                toolsRightHtml += `
+                    <div class="tool-item">
+                        <a href="#" class="edit-btn" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
+                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать" style="opacity:0.6;">
+                            <span class="lock-icon">🔒</span>
+                        </a>
+                    </div>
+                `;
+            } else if (!currentUser) {
                 toolsRightHtml += `
                     <div class="tool-item">
                         <a href="/reg" class="edit-btn" title="Войдите чтобы редактировать">
@@ -792,8 +985,11 @@
 
             document.getElementById('shareBtn')?.addEventListener('click', () => {
                 if (navigator.share) {
-                    navigator.share({ title: data.title, text: data.title + ' — Викивнезакона', url: shareUrl })
-                        .catch(() => {});
+                    navigator.share({ 
+                        title: data.title + ' — Викивнезакона', 
+                        text: data.title + ' — Викивнезакона\n' + (data.content || '').substring(0, 200) + '...', 
+                        url: shareUrl 
+                    }).catch(() => {});
                 } else {
                     navigator.clipboard.writeText(shareUrl).then(() => alert('Ссылка скопирована!'))
                         .catch(() => prompt('Скопируйте ссылку:', shareUrl));
@@ -817,134 +1013,6 @@
             if (historyLink) historyLink.addEventListener('click', openHistory);
 
             history.replaceState(null, '', '/article?id=' + data.id);
-        }
-
-        // =====================================================
-        // ИСТОРИЯ ИЗМЕНЕНИЙ (из массива внутри статьи)
-        // =====================================================
-        async function loadHistory(articleId) {
-            historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
-            try {
-                const doc = await db.collection('articles').doc(articleId).get();
-                if (!doc.exists) {
-                    historyList.innerHTML = '<div class="history-empty">Статья не найдена</div>';
-                    return;
-                }
-                
-                const data = doc.data();
-                const history = data.history || [];
-                
-                console.log('📜 История загружена:', history.length, 'записей');
-                
-                if (history.length === 0) {
-                    historyList.innerHTML = '<div class="history-empty">История изменений пуста</div>';
-                    return;
-                }
-
-                const sortedHistory = [...history].reverse();
-                
-                let html = '';
-                sortedHistory.forEach((item, index) => {
-                    const date = formatDateTime(item.timestamp);
-                    const user = item.username || 'Неизвестный пользователь';
-                    let actionText = 'Изменение';
-                    if (item.action === 'create') actionText = '📝 Создание статьи';
-                    else if (item.action === 'restore') actionText = '🔄 Восстановление';
-                    else if (item.action === 'edit') actionText = '✏️ Редактирование';
-                    
-                    html += `
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-user">${escapeHtml(user)}</div>
-                                <div class="history-date">${escapeHtml(date)}</div>
-                                <div class="history-action">${escapeHtml(actionText)}</div>
-                            </div>
-                            ${index > 0 ? `<button class="history-restore" data-index="${index}">Восстановить</button>` : ''}
-                        </div>
-                    `;
-                });
-
-                historyList.innerHTML = html;
-
-                document.querySelectorAll('.history-restore').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const index = parseInt(btn.dataset.index);
-                        if (confirm('Восстановить эту версию?')) {
-                            await restoreVersion(articleId, index);
-                        }
-                    });
-                });
-
-            } catch (err) {
-                console.error('❌ Ошибка загрузки истории:', err);
-                historyList.innerHTML = '<div class="history-empty">Ошибка загрузки истории</div>';
-            }
-        }
-
-        // =====================================================
-        // ВОССТАНОВЛЕНИЕ ВЕРСИИ
-        // =====================================================
-        async function restoreVersion(articleId, index) {
-            const doc = await db.collection('articles').doc(articleId).get();
-            if (!doc.exists) {
-                alert('Статья не найдена');
-                return;
-            }
-            const data = doc.data();
-            const isAuthor = currentUser && data.authorId === currentUser.uid;
-            const isAdmin = currentUserRole === 'admin';
-            
-            if (!isAuthor && !isAdmin) {
-                alert('Только автор или администратор могут восстанавливать версии');
-                return;
-            }
-
-            try {
-                const history = data.history || [];
-                
-                if (index >= history.length) {
-                    alert('Версия не найдена');
-                    return;
-                }
-                
-                const versionIndex = history.length - 1 - index;
-                const version = history[versionIndex];
-                
-                if (!version || !version.data) {
-                    alert('Данные версии повреждены');
-                    return;
-                }
-                
-                const restoredData = version.data;
-                
-                await db.collection('articles').doc(articleId).update({
-                    title: restoredData.title,
-                    content: restoredData.content,
-                    afterContent: restoredData.afterContent || '',
-                    infobox: restoredData.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
-                    branches: restoredData.branches || [],
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                await db.collection('articles').doc(articleId).update({
-                    history: firebase.firestore.FieldValue.arrayUnion({
-                        action: 'restore',
-                        userId: currentUser?.uid || 'unknown',
-                        username: currentUsername || 'Неизвестный',
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                        data: restoredData,
-                        restoredFrom: versionIndex
-                    })
-                });
-
-                alert('✅ Версия восстановлена!');
-                historyModal.classList.remove('active');
-                document.body.style.overflow = '';
-                loadArticle(articleId);
-            } catch (err) {
-                console.error('Ошибка восстановления:', err);
-                alert('❌ Ошибка восстановления: ' + err.message);
-            }
         }
 
         function deleteArticle(articleId, data) {
