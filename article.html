@@ -265,6 +265,20 @@
         .infobox-table th i, .infobox-table td i { font-style: italic; }
         .infobox-table th u, .infobox-table td u { text-decoration: underline; }
 
+        /* НОВЫЙ СТИЛЬ ДЛЯ РАЗДЕЛИТЕЛЯ В ИНФОБОКСЕ */
+        .infobox-table .infobox-divider-row td {
+            padding: 2px 10px 4px 10px;
+            font-weight: 700;
+            color: #202122;
+            border-bottom: none;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+        .infobox-table .infobox-divider-row td::before {
+            content: "▎ ";
+            font-weight: 700;
+        }
+
         .article-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .delete-btn { background: #d33; color: #fff; border: none; padding: 6px 14px; border-radius: 2px; cursor: pointer; font-size: 13px; transition: background 0.15s; font-family: inherit; }
         .delete-btn:hover { background: #b22222; }
@@ -617,6 +631,7 @@
                 if (colorMap[color.toLowerCase()]) {
                     colorHex = colorMap[color.toLowerCase()];
                 }
+                // Рекурсивно парсим содержимое — теперь **жирный** внутри цвета будет работать
                 const parsedContent = parseTags(content);
                 return `<span style="color:${colorHex};">${parsedContent}</span>`;
             });
@@ -690,12 +705,26 @@
             return html;
         }
 
+        // =====================================================
+        // buildInfobox — С ПОЛОСКАМИ И ОТСТУПАМИ
+        // =====================================================
         function buildInfobox(data) {
             let rows = '';
             if (data.fields) {
+                const entries = Object.entries(data.fields);
+                let first = true;
                 for (const [key, value] of Object.entries(data.fields)) {
                     const parsedKey = parseTags(key);
                     const parsedValue = parseTags(value);
+                    
+                    // Добавляем разделитель с отступом, палочкой и полужирным
+                    // Делаем это перед каждой парой, кроме первой
+                    if (!first) {
+                        rows += `<tr class="infobox-divider-row"><td colspan="2">▎</td></tr>`;
+                    }
+                    first = false;
+                    
+                    // Добавляем саму строку с отступом
                     rows += `<tr><th>${parsedKey}</th><td>${parsedValue}</td></tr>`;
                 }
             }
