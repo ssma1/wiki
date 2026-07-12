@@ -1,0 +1,42 @@
+name: Auto Generate Sitemap
+
+# Запускать: при каждом пуше в ветку main ИЛИ каждый день в полночь по UTC
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Скачиваем код репозитория на виртуальный сервер GitHub
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Устанавливаем Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Устанавливаем библиотеку для работы с Firebase
+      - name: Install Dependencies
+        run: npm install firebase-admin
+
+      # 4. Запускаем наш JS-скрипт и передаем ему секретный ключ из настроек
+      - name: Run Sitemap Generator
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node generate-sitemap.js
+
+      # 5. Сохраняем обновленный sitemap.xml обратно в репозиторий
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Автоматическое обновление sitemap.xml" && git push)
