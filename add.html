@@ -612,7 +612,7 @@
                         <div class="help-item">
                             <strong>Сноска:</strong> <code>[1]</code>
                         </div>
-                        <div class="help-note">✅ Все теги работают в любом месте: текст статьи, инфобокс, ветки, текст после статьи — везде!</div>
+                        <div class="help-note">Все теги работают в любом месте: текст статьи, инфобокс, ветки, текст после статьи — везде!</div>
                     </div>
 
                     <div class="form-actions">
@@ -862,7 +862,7 @@
             status.style.display = 'none';
             
             if (!currentUser) { 
-                showStatus('❌ Войдите в систему', 'error'); 
+                showStatus('Войдите в систему', 'error'); 
                 return; 
             }
             
@@ -871,11 +871,11 @@
             const content = document.getElementById('articleContent').value.trim();
             
             if (!title) { 
-                showStatus('❌ Введите название статьи', 'error'); 
+                showStatus('Введите название статьи', 'error'); 
                 return; 
             }
             if (!content) { 
-                showStatus('❌ Введите содержание статьи', 'error'); 
+                showStatus('Введите содержание статьи', 'error'); 
                 return; 
             }
 
