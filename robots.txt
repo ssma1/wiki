@@ -2,14 +2,10 @@
 # robots.txt для Викивнезакона
 # =====================================================
 
-# Разрешаем всем ботам сканировать сайт
+# Общие правила для всех ботов
 User-agent: *
-Allow: /
 
-# =====================================================
 # ЗАПРЕЩАЕМ служебные страницы
-# =====================================================
-
 Disallow: /add.html
 Disallow: /edit.html
 Disallow: /login.html
@@ -23,70 +19,40 @@ Disallow: /article-redirect.php
 Disallow: /sitemap.php
 Disallow: /generate-sitemap.html
 
-# =====================================================
-# ЯВНО РАЗРЕШАЕМ статьи и главную
-# =====================================================
-
+# РАЗРЕШАЕМ всё остальное (Allow: / по умолчанию активен, если нет Disallow)
 Allow: /
-Allow: /article.html
-Allow: /index.html
 
 # =====================================================
-# Карта сайта
+# Googlebot — убираем Crawl-delay!
 # =====================================================
-
-Sitemap: https://wikivnezakona.cc.cd/sitemap.xml
-
-# =====================================================
-# Googlebot — помедленнее, чтобы не нагружать
-# =====================================================
-
 User-agent: Googlebot
-Crawl-delay: 1
+# Перечислять заново все Disallow не нужно, они наследуются из User-agent: *
+# Если хотите управлять скоростью Googlebot, это делается только в Google Search Console
 
 # =====================================================
-# Yandex — помедленнее
+# Yandex — Crawl-delay поддерживается Яндексом
 # =====================================================
-
 User-agent: Yandex
 Crawl-delay: 2
 
 # =====================================================
 # ЗАПРЕТ для плохих ботов (воруют контент)
 # =====================================================
-
 User-agent: MJ12bot
-Disallow: /
-
 User-agent: AhrefsBot
-Disallow: /
-
 User-agent: SemrushBot
-Disallow: /
-
 User-agent: DotBot
-Disallow: /
-
 User-agent: GPTBot
-Disallow: /
-
 User-agent: CCBot
-Disallow: /
-
 User-agent: PetalBot
-Disallow: /
-
 User-agent: Bytespider
-Disallow: /
-
 User-agent: Amazonbot
-Disallow: /
-
 User-agent: Applebot
-Disallow: /
-
 User-agent: Baiduspider
-Disallow: /
-
 User-agent: YandexBot
 Disallow: /
+
+# =====================================================
+# Карта сайта
+# =====================================================
+Sitemap: https://wikivnezakona.cc.cd/sitemap.xml
