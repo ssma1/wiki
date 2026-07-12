@@ -63,6 +63,12 @@
         .form-group .hint { font-size: 13px; color: #72777d; margin-top: 4px; line-height: 1.6; }
         .form-group .hint code { background: #f0f0f0; padding: 1px 6px; border-radius: 2px; font-size: 12px; font-family: monospace; }
 
+        /* 🔥 ДЛЯ ТЕКСТА БЕЗ ПРОБЕЛОВ */
+        .form-group textarea, .preview-content, .article-body {
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
         .editor-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 10px; background: #f8f9fa; border: 1px solid #a2a9b1; border-bottom: none; border-radius: 2px 2px 0 0; }
         .editor-toolbar button { padding: 4px 10px; background: #fff; border: 1px solid #a2a9b1; border-radius: 2px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all 0.15s; color: #202122; display: inline-flex; align-items: center; gap: 4px; }
         .editor-toolbar button:hover { background: #eaecf0; border-color: #36c; }
@@ -108,7 +114,7 @@
 
         .preview-section { background: #fff; border: 1px solid #eaecf0; border-radius: 2px; padding: 16px; margin-bottom: 20px; }
         .preview-section .preview-title { font-weight: 600; margin-bottom: 8px; font-size: 15px; color: #54595d; }
-        .preview-content { font-size: 14px; line-height: 1.7; padding: 16px; background: #f8f9fa; border-radius: 2px; min-height: 80px; overflow-wrap: break-word; }
+        .preview-content { font-size: 14px; line-height: 1.7; padding: 16px; background: #f8f9fa; border-radius: 2px; min-height: 80px; overflow-wrap: break-word; word-break: break-word; }
         .preview-content p { margin-bottom: 10px; }
         .preview-content .ref { color: #0645ad; font-size: 12px; vertical-align: super; }
         .preview-content b { font-weight: 700; }
@@ -292,7 +298,8 @@
         burgerOverlay.addEventListener('click', closeMenu);
 
         let currentUser = null, currentUserRole = 'user', currentUsername = '', isEditMode = false, editArticleId = null;
-        let existingArticleData = null; // Храним исходные данные статьи
+        let existingArticleData = null;
+        let canChangeTitle = false;
 
         auth.onAuthStateChanged(user => {
             currentUser = user;
@@ -347,21 +354,21 @@
             const params = new URLSearchParams(window.location.search); 
             const articleId = params.get('id');
             const titleParam = params.get('title');
+            const canChangeTitleParam = params.get('canChangeTitle') === 'true';
             
             if (articleId) { 
                 isEditMode = true; 
                 editArticleId = articleId; 
+                canChangeTitle = canChangeTitleParam;
                 loadArticleForEdit(articleId); 
             } else { 
                 isEditMode = false; 
                 editArticleId = null; 
+                canChangeTitle = true; // При создании всегда можно менять название
                 renderForm(null, titleParam); 
             }
         }
         
-        // =====================================================
-        // 🔥 ЗАГРУЗКА СТАТЬИ ДЛЯ РЕДАКТИРОВАНИЯ (ИСПРАВЛЕНО)
-        // =====================================================
         function loadArticleForEdit(articleId) {
             if (!currentUser) { 
                 container.innerHTML = `<div class="auth-warning"><h2>Требуется авторизация</h2><p>Пожалуйста, <a href="/login">войдите</a> для редактирования.</p></div>`; 
@@ -374,10 +381,15 @@
                     return; 
                 }
                 const data = doc.data();
-                
-                // 🔥 УБРАЛ ПРОВЕРКУ ПРАВ — ЛЮБОЙ ЗАЛОГИНЕННЫЙ МОЖЕТ РЕДАКТИРОВАТЬ!
-                // Но автор и админ могут менять название, остальные — только контент
                 existingArticleData = data;
+                
+                // Если canChangeTitle не был передан из article.html, определяем сами
+                const isAuthor = currentUser && data.authorId === currentUser.uid;
+                const isAdmin = currentUserRole === 'admin';
+                if (!canChangeTitle) {
+                    canChangeTitle = isAuthor || isAdmin;
+                }
+                
                 renderForm(data, null);
             }).catch(err => { 
                 container.innerHTML = `<div class="auth-warning"><h2>Ошибка загрузки</h2><p>${escapeHtml(err.message)}</p></div>`; 
@@ -394,15 +406,31 @@
             const infobox = existingData?.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' };
             const branches = existingData?.branches || [];
 
+            // 🔥 ОПРЕДЕЛЯЕМ МОЖЕТ ЛИ ПОЛЬЗОВАТЕЛЬ МЕНЯТЬ НАЗВАНИЕ
+            const isAuthor = currentUser && existingData && existingData.authorId === currentUser.uid;
+            const isAdmin = currentUserRole === 'admin';
+            const canEditTitle = canChangeTitle || isAuthor || isAdmin || !isEditMode;
+
             container.innerHTML = `
                 <h1 class="form-title">${isEditMode ? 'Редактирование статьи' : 'Создание новой статьи'}</h1>
                 <div class="form-status" id="formStatus"></div>
                 <form id="articleForm">
-                    <div class="form-group">
+                    <!-- 🔥 ПОЛЕ НАЗВАНИЯ — ВИДНО ТОЛЬКО АВТОРУ ИЛИ АДМИНУ -->
+                    <div class="form-group" id="titleGroup" style="${canEditTitle ? '' : 'display:none;'}">
                         <label>Название статьи <span class="required">*</span></label>
                         <input type="text" id="articleTitle" value="${escapeHtml(title)}" placeholder="Введите название статьи" required>
-                        ${isEditMode && existingData ? `<span style="font-size:12px;color:#72777d;display:block;margin-top:4px;">${currentUserRole === 'admin' || existingData.authorId === currentUser.uid ? '✅ Вы можете изменить название' : '⚠️ Только автор или администратор могут менять название'}</span>` : ''}
+                        ${isEditMode ? `<span style="font-size:12px;color:#2a8;display:block;margin-top:4px;">✅ Вы можете изменить название</span>` : ''}
                     </div>
+                    
+                    <!-- 🔥 ЗАГЛУШКА ДЛЯ ЧУЖИХ (название видно но не редактируется) -->
+                    ${!canEditTitle && isEditMode ? `
+                        <div class="form-group" style="opacity:0.6;background:#f5f5f5;padding:10px 12px;border-radius:4px;margin-bottom:20px;">
+                            <label style="font-weight:600;font-size:15px;color:#72777d;">Название статьи (только для чтения)</label>
+                            <div style="font-size:16px;color:#202122;padding:4px 0;">${escapeHtml(title)}</div>
+                            <span style="font-size:12px;color:#72777d;">⚠️ Изменить название может только автор или администратор</span>
+                        </div>
+                        <input type="hidden" id="articleTitle" value="${escapeHtml(title)}">
+                    ` : ''}
 
                     <div class="form-group">
                         <label>Текст статьи <span class="required">*</span></label>
@@ -536,7 +564,7 @@
             document.getElementById('clearInfobox').addEventListener('click', () => { document.querySelectorAll('.infobox-field:not(#infoboxTemplate)').forEach(el => el.remove()); });
             function attachRemoveHandler(el) { const btn = el.querySelector('.remove-field'); if (btn) btn.addEventListener('click', () => el.remove()); }
 
-            // === IMAGE UPLOAD через IMGBB ===
+            // === IMAGE UPLOAD ===
             const uploadBtn = document.getElementById('uploadImageBtn'); 
             const fileInput = document.getElementById('imageFileInput'); 
             const imageInput = document.getElementById('infoboxImage'); 
@@ -654,7 +682,7 @@
                 preview.innerHTML = previewHtml + infoboxPreview + afterHtml + branchesHtml || '<span style="color:#72777d;">Предпросмотр будет здесь...</span>';
             }
 
-            titleInput.addEventListener('input', updatePreview);
+            titleInput?.addEventListener('input', updatePreview);
             contentInput.addEventListener('input', updatePreview);
             afterInput.addEventListener('input', updatePreview);
             document.querySelectorAll('#infoboxFields input').forEach(inp => inp.addEventListener('input', updatePreview));
@@ -686,9 +714,6 @@
             }).catch(err => console.error('Ошибка сохранения истории:', err));
         }
 
-        // =====================================================
-        // 🔥 СОХРАНЕНИЕ СТАТЬИ (ПОЛНОСТЬЮ ИСПРАВЛЕНО)
-        // =====================================================
         function saveArticle() {
             const status = document.getElementById('formStatus'); 
             status.className = 'form-status'; 
@@ -699,7 +724,10 @@
                 return; 
             }
             
-            const title = document.getElementById('articleTitle').value.trim(); 
+            // Определяем, есть ли поле title (может быть скрыто)
+            const titleInput = document.getElementById('articleTitle');
+            const title = titleInput ? titleInput.value.trim() : (existingArticleData?.title || '');
+            
             const content = document.getElementById('articleContent').value.trim();
             
             if (!title) { 
@@ -736,12 +764,10 @@
                 branches
             };
 
-            // 🔥 РЕДАКТИРОВАНИЕ
             if (isEditMode && editArticleId) {
-                // Проверяем, может ли пользователь менять название
                 const isAuthor = existingArticleData && existingArticleData.authorId === currentUser.uid;
                 const isAdminUser = currentUserRole === 'admin';
-                const canChangeTitle = isAuthor || isAdminUser;
+                const canEditTitle = isAuthor || isAdminUser;
                 
                 const updateData = {
                     content: articleData.content,
@@ -751,25 +777,15 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                // Только автор или админ могут менять название
-                if (canChangeTitle) {
+                if (canEditTitle) {
                     updateData.title = articleData.title;
                 } else if (existingArticleData) {
-                    // Если не автор, сохраняем старое название
                     updateData.title = existingArticleData.title;
                 }
                 
-                // Добавляем authorId если его нет
                 if (existingArticleData && !existingArticleData.authorId) {
                     updateData.authorId = currentUser.uid;
                 }
-                
-                console.log('📝 Обновление статьи:', { 
-                    id: editArticleId, 
-                    canChangeTitle, 
-                    titleChanged: canChangeTitle ? articleData.title : 'не изменено',
-                    updateData 
-                });
                 
                 db.collection('articles').doc(editArticleId).update(updateData)
                     .then(() => {
@@ -790,9 +806,7 @@
                         console.error('❌ Ошибка сохранения:', err);
                         showStatus('❌ Ошибка: ' + err.message, 'error');
                     });
-            } 
-            // 🔥 СОЗДАНИЕ НОВОЙ СТАТЬИ
-            else {
+            } else {
                 const newRef = db.collection('articles').doc();
                 const newArticleData = {
                     ...articleData,
@@ -801,8 +815,6 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
-                
-                console.log('📝 Создание новой статьи:', { id: newRef.id, newArticleData });
                 
                 newRef.set(newArticleData)
                     .then(() => {
