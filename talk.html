@@ -531,7 +531,7 @@
                 }
             });
 
-            // Используем только существующие иконки
+            // Иконки - все рабочие
             const ICONS = {
                 speechBubbles: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/speechBubbles.svg',
                 article: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/article.svg',
@@ -615,6 +615,7 @@
                 });
             }
 
+            // САЙДБАР - ТОЛЬКО ССЫЛКА НА СТАТЬЮ, БЕЗ ЧУЖИХ ОБСУЖДЕНИЙ
             let sidebarHtml = `
                 <div class="talk-sidebar">
                     <div class="sidebar-title">
@@ -625,35 +626,8 @@
                         <img src="${ICONS.article}" alt="Статья" style="width:14px;height:14px;filter:invert(0.3);vertical-align:middle;margin-right:4px;">
                         ${escapeHtml(article.title)} <span class="meta">Перейти к статье</span>
                     </a>
+                </div>
             `;
-
-            db.collection('talkTopics').limit(5).get()
-                .then(snapshot => {
-                    const topics = [];
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (data.articleId !== article.id) {
-                            topics.push({ articleId: data.articleId, title: data.title || 'Статья', lastMsg: data.updatedAt || data.createdAt });
-                        }
-                    });
-                    const sidebarContainer = document.querySelector('.talk-sidebar');
-                    if (sidebarContainer) {
-                        topics.forEach(t => {
-                            const el = document.createElement('a');
-                            el.className = 'sidebar-item';
-                            el.href = '/talk?articleId=' + t.articleId;
-                            const title = t.title || 'Статья';
-                            el.innerHTML = `
-                                <img src="${ICONS.speechBubbles}" alt="Обсуждение" style="width:14px;height:14px;filter:invert(0.3);vertical-align:middle;margin-right:4px;">
-                                ${escapeHtml(title)} <span class="meta">Последнее сообщение: ${formatDateShort(t.lastMsg)}</span>
-                            `;
-                            sidebarContainer.appendChild(el);
-                        });
-                    }
-                })
-                .catch(() => {});
-
-            sidebarHtml += `</div>`;
 
             let protectedBadge = '';
             if (isProtected) {
@@ -794,8 +768,8 @@
             const topicData = {
                 articleId: currentArticleId,
                 title: title,
-                userId: currentUser.uid,        // <--- ДОБАВЛЕНО
-                username: currentUsername,      // <--- ДОБАВЛЕНО
+                userId: currentUser.uid,
+                username: currentUsername,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
