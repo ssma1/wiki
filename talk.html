@@ -66,12 +66,12 @@
         .talk-tabs .tab { padding: 8px 16px; font-size: 14px; color: #54595d; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; display: flex; align-items: center; gap: 6px; }
         .talk-tabs .tab.active { color: #202122; border-bottom-color: #36c; font-weight: 500; }
         .talk-tabs .tab:hover { color: #202122; }
-        .talk-tabs .tab a { text-decoration: none; color: inherit; }
+        .talk-tabs .tab a { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 6px; }
         .talk-tabs .tab img { width: 18px; height: 18px; filter: invert(0.4); }
         .talk-tabs .tab.active img { filter: invert(0); }
 
         .talk-tools { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 12px 0; flex-wrap: wrap; gap: 8px; }
-        .talk-tools .talk-stats { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #72777d; }
+        .talk-tools .talk-stats { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #72777d; flex-wrap: wrap; }
         .talk-tools .talk-stats .stat-item { display: flex; align-items: center; gap: 4px; }
         .talk-tools .talk-stats img { width: 16px; height: 16px; filter: invert(0.5); }
 
@@ -83,7 +83,7 @@
         .talk-message .msg-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
         .talk-message .msg-user { font-weight: 600; color: #202122; font-size: 15px; display: flex; align-items: center; gap: 6px; }
         .talk-message .msg-user .user-tag { font-weight: 400; font-size: 13px; color: #72777d; }
-        .talk-message .msg-user .user-icon { width: 18px; height: 18px; filter: invert(0.3); }
+        .talk-message .msg-user .user-icon { width: 18px; height: 18px; filter: invert(0.3); flex-shrink: 0; }
         .talk-message .msg-date { font-size: 13px; color: #72777d; }
         .talk-message .msg-content { font-size: 15px; line-height: 1.7; color: #202122; word-wrap: break-word; overflow-wrap: break-word; }
         .talk-message .msg-content p { margin-bottom: 8px; }
@@ -215,6 +215,7 @@
             .burger-menu { width: 280px; left: -280px; }
             .talk-message .msg-replies { margin-left: 12px; padding-left: 10px; }
             .talk-message .msg-header { flex-direction: column; align-items: flex-start; }
+            .talk-tools .talk-stats { gap: 8px; }
         }
         @media (min-width: 769px) {
             .container { padding: 16px 24px; }
@@ -294,28 +295,14 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Базовые URL иконок Википедии
-        const ICONS = {
-            menu: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg',
-            search: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg',
-            home: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg',
-            die: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg',
-            edit: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg',
-            userAvatar: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg',
-            lock: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/lock.svg',
-            talk: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/speechBubbles.svg',
-            article: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/article.svg',
-            history: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/history.svg',
-            language: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/language.svg',
-            star: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/star.svg',
-            share: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/share.svg',
-            reply: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/speechBubbles.svg',
-            add: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/add.svg',
-            trash: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/trash.svg',
-            info: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/info.svg',
-            help: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/help.svg',
-            ellipsis: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/ellipsis.svg',
-        };
+        // ===== ИКОНКИ В ВИДЕ SVG-ОБЁРТОК (как на других страницах) =====
+        function iconSvg(path, size = 20, filter = 'invert(0.4)') {
+            return `<img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/${path}.svg" style="width:${size}px;height:${size}px;filter:${filter};flex-shrink:0;" alt="">`;
+        }
+
+        function iconSvgWhite(path, size = 16) {
+            return `<img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/${path}.svg" style="width:${size}px;height:${size}px;filter:invert(1);flex-shrink:0;" alt="">`;
+        }
 
         const container = document.getElementById('appContainer');
         const menuToggle = document.getElementById('menuToggle');
@@ -560,7 +547,7 @@
             if (allTopics.length === 0) {
                 topicsHtml = `
                     <div class="talk-empty">
-                        <img src="${ICONS.help}" class="empty-icon" alt="Пусто">
+                        ${iconSvg('help', 48, 'invert(0.5)')}
                         <div class="empty-title">Обсуждение пусто</div>
                         <div class="empty-desc">Станьте первым, кто начнёт обсуждение этой статьи!</div>
                     </div>
@@ -579,14 +566,14 @@
                             <div class="talk-message" data-msg-id="${msg.id}">
                                 <div class="msg-header">
                                     <span class="msg-user">
-                                        <img src="${ICONS.userAvatar}" class="user-icon" alt="User">
+                                        ${iconSvg('userAvatar', 18, 'invert(0.3)')}
                                         ${escapeHtml(msg.username || 'Неизвестный')}
                                         <span class="user-tag">${msg.userId === article.authorId ? '(автор)' : ''}</span>
                                     </span>
                                     <span class="msg-date">${formatDate(msg.createdAt)}</span>
                                 </div>
                                 <div class="msg-content">${parseTags(msg.content)}</div>
-                                ${canDelete ? `<div class="msg-actions"><button class="delete-msg" data-msg-id="${msg.id}"><img src="${ICONS.trash}" alt="Удалить"> Удалить</button></div>` : ''}
+                                ${canDelete ? `<div class="msg-actions"><button class="delete-msg" data-msg-id="${msg.id}">${iconSvg('trash', 16, 'invert(0.4)')} Удалить</button></div>` : ''}
                             </div>
                         `;
                     });
@@ -597,7 +584,7 @@
                             <div class="talk-reply-form">
                                 <textarea class="reply-textarea" placeholder="Напишите ответ... (можно использовать **жирный**, *курсив*, [color=red]цвет[/color])" rows="2"></textarea>
                                 <div class="reply-actions">
-                                    <button class="btn-submit reply-submit" data-topic-id="${topic.id}"><img src="${ICONS.reply}" alt="Ответить"> Ответить</button>
+                                    <button class="btn-submit reply-submit" data-topic-id="${topic.id}">${iconSvgWhite('speechBubbles', 16)} Ответить</button>
                                     <button class="btn-cancel reply-cancel">Отмена</button>
                                 </div>
                             </div>
@@ -608,7 +595,7 @@
                         <div class="talk-message" data-topic-id="${topic.id}">
                             <div class="msg-header">
                                 <span class="msg-user" style="font-size:17px;">
-                                    <img src="${ICONS.talk}" class="topic-icon" alt="Тема">
+                                    ${iconSvg('speechBubbles', 20, 'invert(0.3)')}
                                     ${escapeHtml(topic.title)}
                                 </span>
                                 <span class="msg-date">${firstMsg ? 'Автор: ' + escapeHtml(firstMsg.username || 'Неизвестный') : ''} • ${messages.length} сообщ${messages.length === 1 ? 'ение' : 'ения'}</span>
@@ -623,7 +610,7 @@
                             </div>
                             ${messages.length > 1 ? `
                                 <div class="msg-replies">
-                                    ${msgsHtml.slice(msgsHtml.indexOf('<div class="talk-message" data-msg-id') > -1 ? msgsHtml.indexOf('<div class="talk-message" data-msg-id') : 0)}
+                                    ${msgsHtml}
                                 </div>
                             ` : ''}
                             ${replyForm}
@@ -635,9 +622,9 @@
             // === САЙДБАР ===
             let sidebarHtml = `
                 <div class="talk-sidebar">
-                    <div class="sidebar-title"><img src="${ICONS.info}" alt="Инфо"> Узнать больше об этой странице</div>
+                    <div class="sidebar-title">${iconSvg('info', 18, 'invert(0.3)')} Узнать больше об этой странице</div>
                     <a href="/article?id=${article.id}" class="sidebar-item">
-                        <img src="${ICONS.article}" alt="Статья"> ${escapeHtml(article.title)}
+                        ${iconSvg('article', 16, 'invert(0.3)')} ${escapeHtml(article.title)}
                         <span class="meta">Перейти к статье</span>
                     </a>
             `;
@@ -658,7 +645,7 @@
                             el.className = 'sidebar-item';
                             el.href = '/talk?articleId=' + t.articleId;
                             const title = t.title || 'Статья';
-                            el.innerHTML = `<img src="${ICONS.talk}" alt="Обсуждение"> ${escapeHtml(title)} <span class="meta">Последнее сообщение: ${formatDateShort(t.lastMsg)}</span>`;
+                            el.innerHTML = `${iconSvg('speechBubbles', 16, 'invert(0.3)')} ${escapeHtml(title)} <span class="meta">Последнее сообщение: ${formatDateShort(t.lastMsg)}</span>`;
                             sidebarContainer.appendChild(el);
                         });
                     }
@@ -670,7 +657,7 @@
             // === ЗАЩИТА ===
             let protectedBadge = '';
             if (isProtected) {
-                protectedBadge = `<span class="talk-protected-badge"><img src="${ICONS.lock}" alt="Защищено"> Обсуждение защищено</span>`;
+                protectedBadge = `<span class="talk-protected-badge">${iconSvg('lock', 16, 'invert(0.3)')} Обсуждение защищено</span>`;
             }
 
             // === КНОПКА РЕДАКТИРОВАНИЯ ===
@@ -679,7 +666,7 @@
                 editBtnHtml = `
                     <div class="tool-item">
                         <a href="/add?id=${article.id}" class="edit-btn" title="Редактировать статью">
-                            <img src="${ICONS.edit}" alt="Редактировать">
+                            ${iconSvg('edit', 20, 'invert(0.4)')}
                         </a>
                     </div>
                 `;
@@ -687,9 +674,9 @@
                 editBtnHtml = `
                     <div class="tool-item">
                         <a href="https://wikivnezakona.cc.cd/article?id=eHa22PK7P72LE2Th3SbB" class="edit-btn protected" title="Статья защищена">
-                            <img src="${ICONS.edit}" alt="Редактировать" style="opacity:0.6;">
+                            ${iconSvg('edit', 20, 'invert(0.4)')}
                             <span class="lock-overlay">
-                                <img src="${ICONS.lock}" alt="Закрытый замок" style="width:14px;height:14px;filter:invert(0.4);">
+                                ${iconSvg('lock', 14, 'invert(0.4)')}
                             </span>
                         </a>
                     </div>
@@ -698,7 +685,7 @@
                 editBtnHtml = `
                     <div class="tool-item">
                         <a href="/reg" class="edit-btn" title="Войдите чтобы редактировать">
-                            <img src="${ICONS.edit}" alt="Редактировать">
+                            ${iconSvg('edit', 20, 'invert(0.4)')}
                         </a>
                     </div>
                 `;
@@ -709,11 +696,11 @@
             if (currentUser) {
                 newTopicForm = `
                     <div class="talk-new-topic" id="newTopicForm">
-                        <div class="topic-title"><img src="${ICONS.add}" alt="Добавить"> Добавить тему</div>
+                        <div class="topic-title">${iconSvg('add', 20, 'invert(0.3)')} Добавить тему</div>
                         <input type="text" id="newTopicTitle" placeholder="Название темы..." maxlength="100">
                         <textarea id="newTopicContent" placeholder="Текст сообщения... (можно использовать **жирный**, *курсив*, [color=red]цвет[/color])" rows="3"></textarea>
                         <div class="topic-actions">
-                            <button class="btn-submit" id="createTopicBtn"><img src="${ICONS.add}" alt="Создать"> Создать тему</button>
+                            <button class="btn-submit" id="createTopicBtn">${iconSvgWhite('add', 16)} Создать тему</button>
                             <button class="btn-cancel" id="cancelTopicBtn">Отмена</button>
                         </div>
                     </div>
@@ -735,15 +722,15 @@
                 </div>
 
                 <div class="talk-tabs">
-                    <button class="tab"><a href="/article?id=${article.id}"><img src="${ICONS.article}" alt="Статья"> Статья</a></button>
-                    <button class="tab active"><img src="${ICONS.talk}" alt="Обсуждение"> Обсуждение</button>
+                    <button class="tab"><a href="/article?id=${article.id}">${iconSvg('article', 18, 'invert(0.4)')} Статья</a></button>
+                    <button class="tab active">${iconSvg('speechBubbles', 18, 'invert(0)')} Обсуждение</button>
                 </div>
 
                 <div class="talk-tools">
                     <div class="talk-stats">
-                        <span class="stat-item"><img src="${ICONS.talk}" alt="Темы"> ${allTopics.length} тем</span>
-                        <span class="stat-item"><img src="${ICONS.reply}" alt="Сообщения"> ${totalMessages} сообщений</span>
-                        ${lastDate ? `<span class="stat-item"><img src="${ICONS.history}" alt="Последнее"> ${formatDateShort(lastDate)} от ${escapeHtml(lastUser)}</span>` : ''}
+                        <span class="stat-item">${iconSvg('speechBubbles', 16, 'invert(0.5)')} ${allTopics.length} тем</span>
+                        <span class="stat-item">${iconSvg('article', 16, 'invert(0.5)')} ${totalMessages} сообщений</span>
+                        ${lastDate ? `<span class="stat-item">${iconSvg('history', 16, 'invert(0.5)')} ${formatDateShort(lastDate)} от ${escapeHtml(lastUser)}</span>` : ''}
                     </div>
                     <div class="tool-right" style="display:flex;align-items:center;gap:8px;">
                         ${editBtnHtml}
