@@ -69,7 +69,6 @@
 
         .talk-tools { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 12px 0; flex-wrap: wrap; gap: 8px; }
         .talk-tools .talk-stats { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #72777d; flex-wrap: wrap; }
-        .talk-tools .talk-stats .stat-item { display: flex; align-items: center; gap: 4px; }
 
         .talk-body { background: #ffffff; padding: 20px 24px; border: 1px solid #eaecf0; border-radius: 2px; margin-bottom: 16px; line-height: 1.7; font-size: 15px; max-width: 100%; }
 
@@ -120,9 +119,12 @@
         .talk-new-topic .topic-actions .btn-cancel { background: #f8f9fa; }
         .talk-new-topic .topic-actions .btn-cancel:hover { background: #eaecf0; }
 
-        .talk-empty { text-align: center; padding: 40px 20px; color: #72777d; }
-        .talk-empty .empty-title { font-size: 18px; font-weight: 500; color: #202122; margin-bottom: 4px; }
-        .talk-empty .empty-desc { font-size: 14px; color: #72777d; }
+        .talk-empty { text-align: center; padding: 60px 20px; color: #72777d; }
+        .talk-empty .empty-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+        .talk-empty .empty-title { font-size: 20px; font-weight: 500; color: #202122; margin-bottom: 6px; }
+        .talk-empty .empty-desc { font-size: 15px; color: #72777d; max-width: 400px; margin: 0 auto; line-height: 1.6; }
+        .talk-empty .empty-desc a { color: #36c; text-decoration: none; }
+        .talk-empty .empty-desc a:hover { text-decoration: underline; }
 
         .talk-sidebar { float: right; width: 260px; margin: 0 0 16px 20px; background: #f8f9fa; border: 1px solid #eaecf0; border-radius: 2px; padding: 12px 16px; font-size: 14px; }
         .talk-sidebar .sidebar-title { font-weight: 600; font-size: 15px; color: #202122; margin-bottom: 10px; border-bottom: 1px solid #eaecf0; padding-bottom: 6px; }
@@ -194,6 +196,9 @@
             .talk-message .msg-replies { margin-left: 12px; padding-left: 10px; }
             .talk-message .msg-header { flex-direction: column; align-items: flex-start; }
             .talk-tools .talk-stats { gap: 8px; }
+            .talk-empty { padding: 40px 16px; }
+            .talk-empty .empty-icon { font-size: 36px; }
+            .talk-empty .empty-title { font-size: 18px; }
         }
         @media (min-width: 769px) {
             .container { padding: 16px 24px; }
@@ -298,6 +303,8 @@
         let currentArticleData = null;
         let allTopics = [];
         let allMessages = {};
+        let unsubscribeTopics = null;
+        let unsubscribeMessages = null;
 
         auth.onAuthStateChanged(user => {
             currentUser = user;
@@ -312,14 +319,14 @@
                     }
                     updateAuthUI();
                     const id = getArticleId();
-                    if (id) { currentArticleId = id; loadTalk(id); }
+                    if (id) { currentArticleId = id; loadTalkRealtime(id); }
                     else { container.innerHTML = '<div class="error-text">ID статьи не указан</div>'; }
                 }).catch(() => {
                     currentUserRole = 'user';
                     currentUsername = user.email.split('@')[0] || 'Пользователь';
                     updateAuthUI();
                     const id = getArticleId();
-                    if (id) { currentArticleId = id; loadTalk(id); }
+                    if (id) { currentArticleId = id; loadTalkRealtime(id); }
                     else { container.innerHTML = '<div class="error-text">ID статьи не указан</div>'; }
                 });
             } else {
@@ -327,7 +334,7 @@
                 currentUsername = '';
                 updateAuthUI();
                 const id = getArticleId();
-                if (id) { currentArticleId = id; loadTalk(id); }
+                if (id) { currentArticleId = id; loadTalkRealtime(id); }
                 else { container.innerHTML = '<div class="error-text">ID статьи не указан</div>'; }
             }
         });
@@ -423,9 +430,15 @@
             }
         }
 
-        function loadTalk(articleId) {
+        // ===== РЕАЛЬНОЕ ВРЕМЯ С Firestore =====
+        function loadTalkRealtime(articleId) {
             container.innerHTML = '<div class="loading-text">Загрузка обсуждения...</div>';
 
+            // Отписываемся от старых слушателей
+            if (unsubscribeTopics) { unsubscribeTopics(); unsubscribeTopics = null; }
+            if (unsubscribeMessages) { unsubscribeMessages(); unsubscribeMessages = null; }
+
+            // Загружаем статью
             db.collection('articles').doc(articleId).get()
                 .then(doc => {
                     if (!doc.exists) {
@@ -433,49 +446,42 @@
                         return;
                     }
                     currentArticleData = { id: doc.id, ...doc.data() };
-                    return loadTopics(articleId);
+                    
+                    // Слушаем темы
+                    unsubscribeTopics = db.collection('talkTopics')
+                        .where('articleId', '==', articleId)
+                        .orderBy('createdAt', 'desc')
+                        .onSnapshot(snapshot => {
+                            allTopics = [];
+                            snapshot.forEach(doc => {
+                                allTopics.push({ id: doc.id, ...doc.data() });
+                            });
+                            renderTalk();
+                        }, err => {
+                            console.error('Ошибка загрузки тем:', err);
+                            renderTalk();
+                        });
+
+                    // Слушаем сообщения
+                    unsubscribeMessages = db.collection('talkMessages')
+                        .where('articleId', '==', articleId)
+                        .orderBy('createdAt', 'asc')
+                        .onSnapshot(snapshot => {
+                            allMessages = {};
+                            snapshot.forEach(doc => {
+                                const data = doc.data();
+                                if (!allMessages[data.topicId]) allMessages[data.topicId] = [];
+                                allMessages[data.topicId].push({ id: doc.id, ...data });
+                            });
+                            renderTalk();
+                        }, err => {
+                            console.error('Ошибка загрузки сообщений:', err);
+                            renderTalk();
+                        });
                 })
                 .catch(err => {
                     container.innerHTML = '<div class="error-text">Ошибка загрузки: ' + escapeHtml(err.message) + '</div>';
                     console.error(err);
-                });
-        }
-
-        function loadTopics(articleId) {
-            return db.collection('talkTopics')
-                .where('articleId', '==', articleId)
-                .orderBy('createdAt', 'desc')
-                .get()
-                .then(snapshot => {
-                    allTopics = [];
-                    snapshot.forEach(doc => {
-                        allTopics.push({ id: doc.id, ...doc.data() });
-                    });
-                    return loadMessages(articleId);
-                })
-                .catch(err => {
-                    console.error('Ошибка загрузки тем:', err);
-                    return loadMessages(articleId);
-                });
-        }
-
-        function loadMessages(articleId) {
-            return db.collection('talkMessages')
-                .where('articleId', '==', articleId)
-                .orderBy('createdAt', 'asc')
-                .get()
-                .then(snapshot => {
-                    allMessages = {};
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (!allMessages[data.topicId]) allMessages[data.topicId] = [];
-                        allMessages[data.topicId].push({ id: doc.id, ...data });
-                    });
-                    renderTalk();
-                })
-                .catch(err => {
-                    console.error('Ошибка загрузки сообщений:', err);
-                    renderTalk();
                 });
         }
 
@@ -513,8 +519,12 @@
             if (allTopics.length === 0) {
                 topicsHtml = `
                     <div class="talk-empty">
-                        <div class="empty-title">Обсуждение пусто</div>
-                        <div class="empty-desc">Станьте первым, кто начнёт обсуждение этой статьи!</div>
+                        <span class="empty-icon">💬</span>
+                        <div class="empty-title">Здесь пока ничего нет</div>
+                        <div class="empty-desc">
+                            Станьте первым, кто начнёт обсуждение этой статьи!<br>
+                            ${currentUser ? 'Напишите тему ниже, чтобы начать.' : '<a href="/login">Войдите</a>, чтобы создать тему.'}
+                        </div>
                     </div>
                 `;
             } else {
@@ -580,6 +590,7 @@
                 });
             }
 
+            // Сайдбар
             let sidebarHtml = `
                 <div class="talk-sidebar">
                     <div class="sidebar-title">Узнать больше об этой странице</div>
@@ -685,9 +696,9 @@
 
                 <div class="talk-tools">
                     <div class="talk-stats">
-                        <span class="stat-item">📌 ${allTopics.length} тем</span>
-                        <span class="stat-item">💬 ${totalMessages} сообщений</span>
-                        ${lastDate ? `<span class="stat-item">🕐 ${formatDateShort(lastDate)} от ${escapeHtml(lastUser)}</span>` : ''}
+                        <span>📌 ${allTopics.length} тем</span>
+                        <span>💬 ${totalMessages} сообщений</span>
+                        ${lastDate ? `<span>🕐 ${formatDateShort(lastDate)} от ${escapeHtml(lastUser)}</span>` : ''}
                     </div>
                     <div class="tool-right" style="display:flex;align-items:center;gap:8px;">
                         ${editBtnHtml}
@@ -703,6 +714,7 @@
                 ${newTopicForm}
             `;
 
+            // Эвенты
             document.getElementById('createTopicBtn')?.addEventListener('click', createTopic);
             document.getElementById('cancelTopicBtn')?.addEventListener('click', () => {
                 document.getElementById('newTopicTitle').value = '';
@@ -768,7 +780,6 @@
                 .then(() => {
                     document.getElementById('newTopicTitle').value = '';
                     document.getElementById('newTopicContent').value = '';
-                    loadTalk(currentArticleId);
                 })
                 .catch(err => {
                     alert('Ошибка: ' + err.message);
@@ -794,7 +805,6 @@
             })
             .then(() => {
                 form.querySelector('.reply-textarea').value = '';
-                loadTalk(currentArticleId);
             })
             .catch(err => {
                 alert('Ошибка: ' + err.message);
@@ -816,9 +826,6 @@
                         return;
                     }
                     return db.collection('talkMessages').doc(msgId).delete();
-                })
-                .then(() => {
-                    loadTalk(currentArticleId);
                 })
                 .catch(err => {
                     alert('Ошибка: ' + err.message);
