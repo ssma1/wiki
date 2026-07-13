@@ -63,12 +63,17 @@
         .talk-title .article-link:hover { text-decoration: underline; }
 
         .talk-tabs { display: flex; gap: 0; border-bottom: 1px solid #eaecf0; margin-bottom: 16px; flex-wrap: wrap; }
-        .talk-tabs .tab { padding: 8px 16px; font-size: 14px; color: #54595d; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+        .talk-tabs .tab { padding: 8px 16px; font-size: 14px; color: #54595d; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; display: flex; align-items: center; gap: 6px; }
         .talk-tabs .tab.active { color: #202122; border-bottom-color: #36c; font-weight: 500; }
         .talk-tabs .tab:hover { color: #202122; }
         .talk-tabs .tab a { text-decoration: none; color: inherit; }
+        .talk-tabs .tab img { width: 18px; height: 18px; filter: invert(0.4); }
+        .talk-tabs .tab.active img { filter: invert(0); }
 
         .talk-tools { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 12px 0; flex-wrap: wrap; gap: 8px; }
+        .talk-tools .talk-stats { display: flex; align-items: center; gap: 16px; font-size: 13px; color: #72777d; }
+        .talk-tools .talk-stats .stat-item { display: flex; align-items: center; gap: 4px; }
+        .talk-tools .talk-stats img { width: 16px; height: 16px; filter: invert(0.5); }
 
         .talk-body { background: #ffffff; padding: 20px 24px; border: 1px solid #eaecf0; border-radius: 2px; margin-bottom: 16px; line-height: 1.7; font-size: 15px; max-width: 100%; }
 
@@ -76,8 +81,9 @@
         .talk-message { border-bottom: 1px solid #eaecf0; padding: 16px 0; }
         .talk-message:last-child { border-bottom: none; }
         .talk-message .msg-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
-        .talk-message .msg-user { font-weight: 600; color: #202122; font-size: 15px; }
+        .talk-message .msg-user { font-weight: 600; color: #202122; font-size: 15px; display: flex; align-items: center; gap: 6px; }
         .talk-message .msg-user .user-tag { font-weight: 400; font-size: 13px; color: #72777d; }
+        .talk-message .msg-user .user-icon { width: 18px; height: 18px; filter: invert(0.3); }
         .talk-message .msg-date { font-size: 13px; color: #72777d; }
         .talk-message .msg-content { font-size: 15px; line-height: 1.7; color: #202122; word-wrap: break-word; overflow-wrap: break-word; }
         .talk-message .msg-content p { margin-bottom: 8px; }
@@ -89,50 +95,60 @@
         .talk-message .msg-content u { text-decoration: underline; }
 
         .talk-message .msg-actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
-        .talk-message .msg-actions button { background: none; border: none; color: #36c; cursor: pointer; font-size: 13px; padding: 0; font-family: inherit; transition: opacity 0.15s; }
+        .talk-message .msg-actions button { background: none; border: none; color: #36c; cursor: pointer; font-size: 13px; padding: 0; font-family: inherit; transition: opacity 0.15s; display: flex; align-items: center; gap: 4px; }
         .talk-message .msg-actions button:hover { opacity: 0.7; text-decoration: underline; }
         .talk-message .msg-actions .delete-msg { color: #d33; }
+        .talk-message .msg-actions img { width: 16px; height: 16px; filter: invert(0.4); }
 
         .talk-message .msg-replies { margin-left: 30px; padding-left: 16px; border-left: 3px solid #eaecf0; margin-top: 12px; }
         .talk-message .msg-replies .talk-message { border-bottom: 1px solid #f0f0f0; padding: 12px 0; }
         .talk-message .msg-replies .talk-message:last-child { border-bottom: none; }
+
+        .talk-message .topic-icon { width: 20px; height: 20px; filter: invert(0.3); flex-shrink: 0; }
 
         /* ===== ФОРМА ОТВЕТА ===== */
         .talk-reply-form { margin-top: 12px; padding: 12px 0 0 0; border-top: 1px solid #eaecf0; }
         .talk-reply-form textarea { width: 100%; padding: 8px 12px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 60px; transition: border-color 0.2s; word-break: break-word; overflow-wrap: break-word; }
         .talk-reply-form textarea:focus { border-color: #36c; box-shadow: 0 0 0 1px #36c; outline: none; }
         .talk-reply-form .reply-actions { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
-        .talk-reply-form .reply-actions button { padding: 4px 16px; border: 1px solid #a2a9b1; border-radius: 2px; background: #fff; cursor: pointer; font-size: 13px; font-family: inherit; transition: background 0.15s; }
+        .talk-reply-form .reply-actions button { padding: 4px 16px; border: 1px solid #a2a9b1; border-radius: 2px; background: #fff; cursor: pointer; font-size: 13px; font-family: inherit; transition: background 0.15s; display: flex; align-items: center; gap: 4px; }
         .talk-reply-form .reply-actions button:hover { background: #eaecf0; }
         .talk-reply-form .reply-actions .btn-submit { background: #36c; color: #fff; border-color: #36c; }
         .talk-reply-form .reply-actions .btn-submit:hover { background: #2a4b8d; border-color: #2a4b8d; }
+        .talk-reply-form .reply-actions img { width: 16px; height: 16px; filter: invert(1); }
 
         /* ===== НОВАЯ ТЕМА ===== */
         .talk-new-topic { background: #f8f9fa; border: 1px solid #eaecf0; border-radius: 2px; padding: 16px; margin-top: 16px; }
-        .talk-new-topic .topic-title { font-weight: 600; font-size: 16px; margin-bottom: 12px; color: #202122; }
+        .talk-new-topic .topic-title { font-weight: 600; font-size: 16px; margin-bottom: 12px; color: #202122; display: flex; align-items: center; gap: 8px; }
+        .talk-new-topic .topic-title img { width: 20px; height: 20px; filter: invert(0.3); }
         .talk-new-topic input[type="text"] { width: 100%; padding: 8px 12px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 15px; font-family: inherit; margin-bottom: 8px; transition: border-color 0.2s; }
         .talk-new-topic input[type="text"]:focus { border-color: #36c; box-shadow: 0 0 0 1px #36c; outline: none; }
         .talk-new-topic textarea { width: 100%; padding: 8px 12px; border: 1px solid #a2a9b1; border-radius: 2px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; transition: border-color 0.2s; word-break: break-word; overflow-wrap: break-word; }
         .talk-new-topic textarea:focus { border-color: #36c; box-shadow: 0 0 0 1px #36c; outline: none; }
         .talk-new-topic .topic-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .talk-new-topic .topic-actions button { padding: 6px 20px; border: 1px solid #a2a9b1; border-radius: 2px; background: #fff; cursor: pointer; font-size: 14px; font-family: inherit; transition: background 0.15s; }
+        .talk-new-topic .topic-actions button { padding: 6px 20px; border: 1px solid #a2a9b1; border-radius: 2px; background: #fff; cursor: pointer; font-size: 14px; font-family: inherit; transition: background 0.15s; display: flex; align-items: center; gap: 6px; }
         .talk-new-topic .topic-actions button:hover { background: #eaecf0; }
         .talk-new-topic .topic-actions .btn-submit { background: #36c; color: #fff; border-color: #36c; }
         .talk-new-topic .topic-actions .btn-submit:hover { background: #2a4b8d; border-color: #2a4b8d; }
         .talk-new-topic .topic-actions .btn-cancel { background: #f8f9fa; }
         .talk-new-topic .topic-actions .btn-cancel:hover { background: #eaecf0; }
+        .talk-new-topic .topic-actions img { width: 16px; height: 16px; }
+        .talk-new-topic .topic-actions .btn-submit img { filter: invert(1); }
+        .talk-new-topic .topic-actions .btn-cancel img { filter: invert(0.4); }
 
         .talk-empty { text-align: center; padding: 40px 20px; color: #72777d; }
-        .talk-empty .empty-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+        .talk-empty .empty-icon { width: 48px; height: 48px; margin: 0 auto 10px; display: block; filter: invert(0.5); }
         .talk-empty .empty-title { font-size: 18px; font-weight: 500; color: #202122; margin-bottom: 4px; }
         .talk-empty .empty-desc { font-size: 14px; color: #72777d; }
 
         /* ===== БОКОВОЙ БЛОК "УЗНАТЬ БОЛЬШЕ" ===== */
         .talk-sidebar { float: right; width: 260px; margin: 0 0 16px 20px; background: #f8f9fa; border: 1px solid #eaecf0; border-radius: 2px; padding: 12px 16px; font-size: 14px; }
-        .talk-sidebar .sidebar-title { font-weight: 600; font-size: 15px; color: #202122; margin-bottom: 10px; border-bottom: 1px solid #eaecf0; padding-bottom: 6px; }
-        .talk-sidebar .sidebar-item { display: block; padding: 6px 0; color: #0645ad; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .talk-sidebar .sidebar-title { font-weight: 600; font-size: 15px; color: #202122; margin-bottom: 10px; border-bottom: 1px solid #eaecf0; padding-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+        .talk-sidebar .sidebar-title img { width: 18px; height: 18px; filter: invert(0.3); }
+        .talk-sidebar .sidebar-item { display: block; padding: 6px 0; color: #0645ad; text-decoration: none; border-bottom: 1px solid #f0f0f0; font-size: 14px; display: flex; align-items: center; gap: 6px; }
         .talk-sidebar .sidebar-item:hover { text-decoration: underline; }
-        .talk-sidebar .sidebar-item .meta { font-size: 12px; color: #72777d; display: block; font-weight: 400; }
+        .talk-sidebar .sidebar-item .meta { font-size: 12px; color: #72777d; display: block; font-weight: 400; margin-left: 0; }
+        .talk-sidebar .sidebar-item img { width: 16px; height: 16px; filter: invert(0.3); flex-shrink: 0; }
         .talk-sidebar .sidebar-item:last-child { border-bottom: none; }
 
         /* ===== ЗАЩИТА ===== */
@@ -277,6 +293,29 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+
+        // Базовые URL иконок Википедии
+        const ICONS = {
+            menu: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/menu.svg',
+            search: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/search.svg',
+            home: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/home.svg',
+            die: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/die.svg',
+            edit: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg',
+            userAvatar: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg',
+            lock: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/lock.svg',
+            talk: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/speechBubbles.svg',
+            article: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/article.svg',
+            history: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/history.svg',
+            language: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/language.svg',
+            star: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/star.svg',
+            share: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/share.svg',
+            reply: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/speechBubbles.svg',
+            add: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/add.svg',
+            trash: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/trash.svg',
+            info: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/info.svg',
+            help: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/help.svg',
+            ellipsis: 'https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/ellipsis.svg',
+        };
 
         const container = document.getElementById('appContainer');
         const menuToggle = document.getElementById('menuToggle');
@@ -433,7 +472,6 @@
         function loadTalk(articleId) {
             container.innerHTML = '<div class="loading-text">Загрузка обсуждения...</div>';
 
-            // Загружаем статью
             db.collection('articles').doc(articleId).get()
                 .then(doc => {
                     if (!doc.exists) {
@@ -500,13 +538,11 @@
             const isAuthor = currentUser && article.authorId === currentUser.uid;
             const canEdit = isAdmin || isAuthor;
 
-            // Собираем статистику
             let totalMessages = 0;
             allTopics.forEach(t => {
                 totalMessages += (allMessages[t.id] || []).length;
             });
 
-            // Последнее сообщение
             let lastDate = null;
             let lastUser = '';
             allTopics.forEach(t => {
@@ -520,12 +556,11 @@
                 }
             });
 
-            // === СТРОИМ HTML ===
             let topicsHtml = '';
             if (allTopics.length === 0) {
                 topicsHtml = `
                     <div class="talk-empty">
-                        <span class="empty-icon">💬</span>
+                        <img src="${ICONS.help}" class="empty-icon" alt="Пусто">
                         <div class="empty-title">Обсуждение пусто</div>
                         <div class="empty-desc">Станьте первым, кто начнёт обсуждение этой статьи!</div>
                     </div>
@@ -543,23 +578,26 @@
                         msgsHtml += `
                             <div class="talk-message" data-msg-id="${msg.id}">
                                 <div class="msg-header">
-                                    <span class="msg-user">${escapeHtml(msg.username || 'Неизвестный')} <span class="user-tag">${msg.userId === article.authorId ? '(автор)' : ''}</span></span>
+                                    <span class="msg-user">
+                                        <img src="${ICONS.userAvatar}" class="user-icon" alt="User">
+                                        ${escapeHtml(msg.username || 'Неизвестный')}
+                                        <span class="user-tag">${msg.userId === article.authorId ? '(автор)' : ''}</span>
+                                    </span>
                                     <span class="msg-date">${formatDate(msg.createdAt)}</span>
                                 </div>
                                 <div class="msg-content">${parseTags(msg.content)}</div>
-                                ${canDelete ? `<div class="msg-actions"><button class="delete-msg" data-msg-id="${msg.id}">Удалить</button></div>` : ''}
+                                ${canDelete ? `<div class="msg-actions"><button class="delete-msg" data-msg-id="${msg.id}"><img src="${ICONS.trash}" alt="Удалить"> Удалить</button></div>` : ''}
                             </div>
                         `;
                     });
 
-                    // Форма ответа (только для авторизованных)
                     let replyForm = '';
                     if (currentUser) {
                         replyForm = `
                             <div class="talk-reply-form">
                                 <textarea class="reply-textarea" placeholder="Напишите ответ... (можно использовать **жирный**, *курсив*, [color=red]цвет[/color])" rows="2"></textarea>
                                 <div class="reply-actions">
-                                    <button class="btn-submit reply-submit" data-topic-id="${topic.id}">Ответить</button>
+                                    <button class="btn-submit reply-submit" data-topic-id="${topic.id}"><img src="${ICONS.reply}" alt="Ответить"> Ответить</button>
                                     <button class="btn-cancel reply-cancel">Отмена</button>
                                 </div>
                             </div>
@@ -569,7 +607,10 @@
                     topicsHtml += `
                         <div class="talk-message" data-topic-id="${topic.id}">
                             <div class="msg-header">
-                                <span class="msg-user" style="font-size:17px;">📌 ${escapeHtml(topic.title)}</span>
+                                <span class="msg-user" style="font-size:17px;">
+                                    <img src="${ICONS.talk}" class="topic-icon" alt="Тема">
+                                    ${escapeHtml(topic.title)}
+                                </span>
                                 <span class="msg-date">${firstMsg ? 'Автор: ' + escapeHtml(firstMsg.username || 'Неизвестный') : ''} • ${messages.length} сообщ${messages.length === 1 ? 'ение' : 'ения'}</span>
                             </div>
                             ${firstMsg ? `
@@ -591,14 +632,16 @@
                 });
             }
 
-            // === САЙДБАР "УЗНАТЬ БОЛЬШЕ" ===
+            // === САЙДБАР ===
             let sidebarHtml = `
                 <div class="talk-sidebar">
-                    <div class="sidebar-title">📖 Узнать больше об этой странице</div>
-                    <a href="/article?id=${article.id}" class="sidebar-item">📄 ${escapeHtml(article.title)} <span class="meta">Перейти к статье</span></a>
+                    <div class="sidebar-title"><img src="${ICONS.info}" alt="Инфо"> Узнать больше об этой странице</div>
+                    <a href="/article?id=${article.id}" class="sidebar-item">
+                        <img src="${ICONS.article}" alt="Статья"> ${escapeHtml(article.title)}
+                        <span class="meta">Перейти к статье</span>
+                    </a>
             `;
 
-            // Другие статьи с обсуждениями (рандомные)
             db.collection('talkTopics').limit(5).get()
                 .then(snapshot => {
                     const topics = [];
@@ -608,7 +651,6 @@
                             topics.push({ articleId: data.articleId, title: data.title || 'Статья', lastMsg: data.updatedAt || data.createdAt });
                         }
                     });
-                    // Добавляем в сайдбар
                     const sidebarContainer = document.querySelector('.talk-sidebar');
                     if (sidebarContainer) {
                         topics.forEach(t => {
@@ -616,7 +658,7 @@
                             el.className = 'sidebar-item';
                             el.href = '/talk?articleId=' + t.articleId;
                             const title = t.title || 'Статья';
-                            el.innerHTML = `📌 ${escapeHtml(title)} <span class="meta">Последнее сообщение: ${formatDateShort(t.lastMsg)}</span>`;
+                            el.innerHTML = `<img src="${ICONS.talk}" alt="Обсуждение"> ${escapeHtml(title)} <span class="meta">Последнее сообщение: ${formatDateShort(t.lastMsg)}</span>`;
                             sidebarContainer.appendChild(el);
                         });
                     }
@@ -625,30 +667,29 @@
 
             sidebarHtml += `</div>`;
 
-            // === ОСНОВНОЙ КОНТЕНТ ===
+            // === ЗАЩИТА ===
             let protectedBadge = '';
             if (isProtected) {
-                protectedBadge = `<span class="talk-protected-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Обсуждение защищено</span>`;
+                protectedBadge = `<span class="talk-protected-badge"><img src="${ICONS.lock}" alt="Защищено"> Обсуждение защищено</span>`;
             }
 
-            // Кнопка редактирования (закрытый замок или открытый)
+            // === КНОПКА РЕДАКТИРОВАНИЯ ===
             let editBtnHtml = '';
             if (canEdit && !isProtected) {
                 editBtnHtml = `
                     <div class="tool-item">
                         <a href="/add?id=${article.id}" class="edit-btn" title="Редактировать статью">
-                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
+                            <img src="${ICONS.edit}" alt="Редактировать">
                         </a>
                     </div>
                 `;
             } else if (isProtected) {
-                // 🔥 КИДАЕТ НА СТАТЬЮ eHa22PK7P72LE2Th3SbB
                 editBtnHtml = `
                     <div class="tool-item">
                         <a href="https://wikivnezakona.cc.cd/article?id=eHa22PK7P72LE2Th3SbB" class="edit-btn protected" title="Статья защищена">
-                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать" style="opacity:0.6;">
+                            <img src="${ICONS.edit}" alt="Редактировать" style="opacity:0.6;">
                             <span class="lock-overlay">
-                                <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/lock.svg" alt="Закрытый замок" style="width:14px;height:14px;filter:invert(0.4);">
+                                <img src="${ICONS.lock}" alt="Закрытый замок" style="width:14px;height:14px;filter:invert(0.4);">
                             </span>
                         </a>
                     </div>
@@ -657,22 +698,22 @@
                 editBtnHtml = `
                     <div class="tool-item">
                         <a href="/reg" class="edit-btn" title="Войдите чтобы редактировать">
-                            <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать">
+                            <img src="${ICONS.edit}" alt="Редактировать">
                         </a>
                     </div>
                 `;
             }
 
-            // Форма создания новой темы
+            // === ФОРМА НОВОЙ ТЕМЫ ===
             let newTopicForm = '';
             if (currentUser) {
                 newTopicForm = `
                     <div class="talk-new-topic" id="newTopicForm">
-                        <div class="topic-title">➕ Добавить тему</div>
+                        <div class="topic-title"><img src="${ICONS.add}" alt="Добавить"> Добавить тему</div>
                         <input type="text" id="newTopicTitle" placeholder="Название темы..." maxlength="100">
                         <textarea id="newTopicContent" placeholder="Текст сообщения... (можно использовать **жирный**, *курсив*, [color=red]цвет[/color])" rows="3"></textarea>
                         <div class="topic-actions">
-                            <button class="btn-submit" id="createTopicBtn">Создать тему</button>
+                            <button class="btn-submit" id="createTopicBtn"><img src="${ICONS.add}" alt="Создать"> Создать тему</button>
                             <button class="btn-cancel" id="cancelTopicBtn">Отмена</button>
                         </div>
                     </div>
@@ -694,14 +735,15 @@
                 </div>
 
                 <div class="talk-tabs">
-                    <button class="tab"><a href="/article?id=${article.id}">Статья</a></button>
-                    <button class="tab active">Обсуждение</button>
+                    <button class="tab"><a href="/article?id=${article.id}"><img src="${ICONS.article}" alt="Статья"> Статья</a></button>
+                    <button class="tab active"><img src="${ICONS.talk}" alt="Обсуждение"> Обсуждение</button>
                 </div>
 
                 <div class="talk-tools">
-                    <div style="font-size:13px;color:#72777d;">
-                        📊 ${allTopics.length} тем • ${totalMessages} сообщений
-                        ${lastDate ? `• Последнее сообщение: ${formatDateShort(lastDate)} от ${escapeHtml(lastUser)}` : ''}
+                    <div class="talk-stats">
+                        <span class="stat-item"><img src="${ICONS.talk}" alt="Темы"> ${allTopics.length} тем</span>
+                        <span class="stat-item"><img src="${ICONS.reply}" alt="Сообщения"> ${totalMessages} сообщений</span>
+                        ${lastDate ? `<span class="stat-item"><img src="${ICONS.history}" alt="Последнее"> ${formatDateShort(lastDate)} от ${escapeHtml(lastUser)}</span>` : ''}
                     </div>
                     <div class="tool-right" style="display:flex;align-items:center;gap:8px;">
                         ${editBtnHtml}
@@ -719,14 +761,12 @@
 
             // === ЭВЕНТЫ ===
 
-            // Создание темы
             document.getElementById('createTopicBtn')?.addEventListener('click', createTopic);
             document.getElementById('cancelTopicBtn')?.addEventListener('click', () => {
                 document.getElementById('newTopicTitle').value = '';
                 document.getElementById('newTopicContent').value = '';
             });
 
-            // Ответы
             document.querySelectorAll('.reply-submit').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const topicId = this.dataset.topicId;
@@ -745,7 +785,6 @@
                 });
             });
 
-            // Удаление сообщений
             document.querySelectorAll('.delete-msg').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const msgId = this.dataset.msgId;
@@ -755,7 +794,6 @@
                 });
             });
 
-            // Обновление URL
             history.replaceState(null, '', '/talk?articleId=' + article.id);
         }
 
