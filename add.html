@@ -265,7 +265,7 @@
         <div class="auth-status" id="authStatus"><span id="authStatusText">Загрузка...</span></div>
         <button class="menu-item" id="loginMenuBtn"><img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/userAvatar.svg" alt="Профиль" style="filter: invert(0.3);"><span id="loginMenuText">Войти</span></button>
         <div class="menu-divider"></div>
-        <a href="#" class="menu-item" id="telegramLink">
+        <a href="https://t.me/wikivnezakona" class="menu-item" id="telegramLink">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#202122" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             Подписаться на ТГК
         </a>
@@ -359,7 +359,7 @@
 
         randomArticleBtn.addEventListener('click', () => { closeMenu(); db.collection('articles').get().then(snapshot => { const ids = []; snapshot.forEach(doc => ids.push(doc.id)); if (ids.length === 0) { alert('Статей пока нет'); return; } window.location.href = '/article?id=' + ids[Math.floor(Math.random() * ids.length)]; }); });
         addArticleMenuBtn.addEventListener('click', () => { closeMenu(); if (!currentUser) { alert('Пожалуйста, войдите в систему'); window.location.href = '/login'; return; } window.location.href = '/add'; });
-        telegramLink.addEventListener('click', (e) => { e.preventDefault(); window.open('https://t.me/your_channel', '_blank'); closeMenu(); });
+        telegramLink.addEventListener('click', (e) => { e.preventDefault(); window.open('https://t.me/wikivnezakona', '_blank'); closeMenu(); });
 
         function initPage() {
             const params = new URLSearchParams(window.location.search); 
@@ -410,7 +410,7 @@
         const ARROW_SVG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48cGF0aCBkPSJNMSAxbTkuMyA5LjNsNy4zLTcuMyAxLjQgMS40LTguNyA4LjctOC43LTguNyAxLjQtMS40eiIvPjwvc3ZnPg==';
 
         // =====================================================
-        // 🔥 РАСШИРЕННЫЙ parseTags — ВСЕ ТЕГИ РАБОТАЮТ
+        // parseTags — РАСШИРЕННЫЙ
         // =====================================================
         function parseTags(text) {
             if (!text) return '';
@@ -430,7 +430,7 @@
             // Сноски
             html = html.replace(/\[(\d+)\]/g, '<sup class="ref">[$1]</sup>');
             
-            // === Изображения ===
+            // Изображения
             html = html.replace(/\[img\s*(?:size=([^\s\]]+))?\s*(?:align=([^\s\]]+))?\s*(?:link=([^\s\]]+))?\](.*?)\[\/img\]/g, (match, size, align, link, url) => {
                 let sizeClass = '';
                 if (size === 'small') sizeClass = ' article-image-small';
@@ -450,11 +450,10 @@
             
             html = html.replace(/\[img\](.*?)\[\/img\]/g, '<img src="$1" class="article-image article-image-center" alt="Изображение">');
             
-            // === Заголовки ===
+            // Заголовки
             html = html.replace(/===([^=]+)===/g, '<div style="margin:16px 0 4px 0;font-family:\'Times New Roman\',\'Linux Libertine\',Georgia,serif;font-size:20px;font-weight:400;color:#202122;">$1</div>');
             
-            // === QA блоки с поддержкой тегов внутри и заголовком ===
-            // 🔥 Цветной QA с заголовком: [qa-color=red:вопрос]ответ[/qa-color]
+            // QA блоки
             html = html.replace(/\[qa-color=([^\]:]+):([^\]]*)\](.*?)\[\/qa-color\]/gs, (match, color, title, content) => {
                 let colorHex = color;
                 const colorMap = {
@@ -471,14 +470,12 @@
                 return `<div style="background:${colorHex}22;border-left:4px solid ${colorHex};padding:10px 14px;margin:10px 0;border-radius:2px;"><strong>${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
             });
             
-            // Обычный QA с заголовком
             html = html.replace(/\[qa="([^"]*)"\](.*?)\[\/qa\]/gs, (match, title, content) => {
                 const cleanTitle = title || 'Вопрос-Ответ';
                 const processedContent = parseTags(content);
                 return `<div class="qa-block"><strong class="qa-title">${escapeHtml(cleanTitle)}</strong><div>${processedContent}</div></div>`;
             });
             
-            // Цветной QA без заголовка (только цвет)
             html = html.replace(/\[qa-color=([^\]]+)\](.*?)\[\/qa-color\]/gs, (match, color, content) => {
                 let colorHex = color;
                 const colorMap = {
@@ -495,6 +492,26 @@
             });
             
             return html;
+        }
+
+        // =====================================================
+        // saveToHistory — сохраняет ВСЕ изменения
+        // =====================================================
+        function saveToHistory(articleId, data, action, userId, username) {
+            return db.collection('articleHistory').add({
+                articleId: articleId,
+                userId: userId || 'unknown',
+                username: username || 'Неизвестный',
+                action: action || 'edit',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                data: {
+                    title: data.title,
+                    content: data.content,
+                    afterContent: data.afterContent || '',
+                    infobox: data.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
+                    branches: data.branches || []
+                }
+            }).catch(err => console.error('Ошибка сохранения истории:', err));
         }
 
         function renderForm(existingData, titleParam) {
@@ -849,24 +866,6 @@
                     }).catch(err => alert('Ошибка: ' + err.message));
                 }
             });
-        }
-
-        // ===== СОХРАНЕНИЕ В ИСТОРИЮ =====
-        function saveToHistory(articleId, data, action, userId, username) {
-            return db.collection('articleHistory').add({
-                articleId: articleId,
-                userId: userId || 'unknown',
-                username: username || 'Неизвестный',
-                action: action || 'edit',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                data: {
-                    title: data.title,
-                    content: data.content,
-                    afterContent: data.afterContent || '',
-                    infobox: data.infobox || { title: 'Инфобокс', fields: {}, image: '', bgColor: 'rgba(0, 30, 100, 0.12)' },
-                    branches: data.branches || []
-                }
-            }).catch(err => console.error('Ошибка сохранения истории:', err));
         }
 
         function saveArticle() {

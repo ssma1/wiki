@@ -629,7 +629,6 @@
                 if (colorMap[color.toLowerCase()]) {
                     colorHex = colorMap[color.toLowerCase()];
                 }
-                // НЕ парсим рекурсивно, чтобы не ломать уже обработанный жирный
                 return `<span style="color:${colorHex};">${content}</span>`;
             });
             
@@ -837,7 +836,7 @@
         }
 
         // =====================================================
-        // ИСТОРИЯ ИЗМЕНЕНИЙ
+        // ИСТОРИЯ ИЗМЕНЕНИЙ — без индексов, только timestamp
         // =====================================================
         async function loadHistory(articleId) {
             historyList.innerHTML = '<div class="history-empty">Загрузка истории...</div>';
@@ -845,7 +844,7 @@
                 const historySnapshot = await db.collection('articleHistory')
                     .where('articleId', '==', articleId)
                     .orderBy('timestamp', 'desc')
-                    .limit(100)
+                    .limit(50)
                     .get();
 
                 let historyItems = [];
@@ -863,9 +862,12 @@
                     const date = formatDateTime(item.timestamp);
                     const user = item.username || 'Неизвестный пользователь';
                     let actionText = 'Изменение';
-                    if (item.action === 'create') actionText = 'Создание статьи';
-                    else if (item.action === 'restore') actionText = 'Восстановление';
-                    else if (item.action === 'edit') actionText = 'Редактирование';
+                    if (item.action === 'create') actionText = '📝 Создание статьи';
+                    else if (item.action === 'restore') actionText = '🔄 Восстановление';
+                    else if (item.action === 'edit') actionText = '✏️ Редактирование';
+
+                    // Показываем кнопку восстановления для всех версий, кроме самой новой (индекс 0)
+                    const showRestore = index > 0 && (currentUserRole === 'admin' || currentUsername === user);
 
                     html += `
                         <div class="history-item">
@@ -874,7 +876,8 @@
                                 <div class="history-date">${escapeHtml(date)}</div>
                                 <div class="history-action">${escapeHtml(actionText)}</div>
                             </div>
-                            ${index > 0 ? `<button class="history-restore" data-history-id="${item.id}">Восстановить</button>` : ''}
+                            ${showRestore ? `<button class="history-restore" data-history-id="${item.id}">Восстановить</button>` : ''}
+                            ${index === 0 ? `<span style="font-size:12px;color:#2a8;font-weight:500;">Текущая версия</span>` : ''}
                         </div>
                     `;
                 });
@@ -1005,9 +1008,10 @@
                     </div>
                 `;
             } else if (isProtected && currentUser) {
+                // 🔥 КИДАЕТ НА СТАТЬЮ eHa22PK7P72LE2Th3SbB
                 toolsRightHtml += `
                     <div class="tool-item">
-                        <a href="https://wikivnezakona.cc.cd/article?id=eHa22PK7P72LE2Th3SbB" class="edit-btn protected" title="Статья защищена" onclick="alert('Ошибка! вы не можете изменить приватную статью, так как она была защищена от свиноспелых (таких как вы)'); return false;">
+                        <a href="https://wikivnezakona.cc.cd/article?id=eHa22PK7P72LE2Th3SbB" class="edit-btn protected" title="Статья защищена">
                             <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/edit.svg" alt="Редактировать" style="opacity:0.6;">
                             <span class="lock-overlay">
                                 <img src="https://ru.wikipedia.org/w/extensions/VisualEditor/lib/ve/lib/oojs-ui/themes/wikimediaui/images/icons/lock.svg" alt="Закрытый замок" style="width:14px;height:14px;filter:invert(0.4);">
